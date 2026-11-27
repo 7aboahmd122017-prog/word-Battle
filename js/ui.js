@@ -13,7 +13,7 @@ WB.UI = (() => {
   let current = "home";
   let previous = "home";
   const GAME_SCREENS = ["turn", "reveal", "play", "result", "win"];
-  const WIDE_SCREENS = ["setup", "online"];
+  const WIDE_SCREENS = ["setup", "online", "mode"];
 
   function show(name) {
     if (name !== current) {

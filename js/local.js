@@ -7,10 +7,19 @@ WB.Local = (() => {
   let s = null;      // حالة المباراة
   let word = null;   // الكلمة الحالية (محلياً فقط)
 
+  // المباراة تنحفظ للتبويب المفتوح بس (sessionStorage):
+  // تحديث الصفحة يرجّعك لنفس المباراة، وإغلاق المتصفح أو الخروج ينهيها نهائياً.
+  // نمسح أي مباراة محفوظة دائمة من النسخ القديمة.
+  Store.clearGame();
+  const SESSION_KEY = "wb.localMatch";
   function save() {
-    if (!s) return;
-    if (s.phase === "win") Store.clearGame();
-    else Store.saveGame({ s, word });
+    try {
+      if (!s || s.phase === "win") sessionStorage.removeItem(SESSION_KEY);
+      else sessionStorage.setItem(SESSION_KEY, JSON.stringify({ s, word }));
+    } catch { /* تجاهل */ }
+  }
+  function loadSession() {
+    try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; }
   }
 
   function render() {
@@ -164,19 +173,6 @@ WB.Local = (() => {
       render();
     },
 
-    canResume() {
-      const g = Store.getGame();
-      return !!(g && g.s && g.s.phase !== "win");
-    },
-
-    resume() {
-      const g = Store.getGame();
-      if (!g || !g.s) return;
-      s = g.s; word = g.word;
-      if ((s.phase === "reveal" || s.phase === "play") && !word) s.phase = "turn";
-      render();
-    },
-
     ready() {
       if (!s || s.phase !== "turn") return;
       word = Words.pick(s.settings.categories, s.usedWords);
@@ -238,10 +234,21 @@ WB.Local = (() => {
     inGame: () => !!s,
     render,
 
+    /** بعد تحديث الصفحة: نرجع لنفس المباراة بصمت */
+    hasSession: () => { const g = loadSession(); return !!(g && g.s && g.s.phase !== "win"); },
+    restore() {
+      const g = loadSession();
+      if (!g || !g.s) return false;
+      s = g.s; word = g.word;
+      if ((s.phase === "reveal" || s.phase === "play") && !word) s.phase = "turn";
+      render();
+      return true;
+    },
+
     quit() {
       UI.Timer.stop();
       s = null; word = null;
-      Store.clearGame();
+      save();
     }
   };
 

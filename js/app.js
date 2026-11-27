@@ -5,9 +5,8 @@ WB.App = (() => {
   const { UI, Store, Sound, Local, Online, Words } = WB;
   let ctrl = null; // Local أو Online حسب طريقة اللعب
 
-  function refreshHome() {
-    UI.$("#resumeBtn").hidden = !Local.canResume();
-  }
+  // شاشة البداية ما فيها حالة تتحدث حالياً (المباريات ما تنحفظ)
+  function refreshHome() {}
 
   function goHome() {
     UI.Timer.stop();
@@ -94,6 +93,26 @@ WB.App = (() => {
     card.addEventListener("pointercancel", end);
   }
 
+  /* ===== ميلان بطاقات اختيار الطريقة مع المؤشر ===== */
+  function bindTilt() {
+    if (!window.matchMedia("(hover: hover) and (prefers-reduced-motion: no-preference)").matches) return;
+    UI.$$(".mode-card").forEach((card) => {
+      card.addEventListener("pointermove", (e) => {
+        const r = card.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width;
+        const y = (e.clientY - r.top) / r.height;
+        card.style.setProperty("--ry", `${(x - 0.5) * 10}deg`);
+        card.style.setProperty("--rx", `${(0.5 - y) * 8}deg`);
+        card.style.setProperty("--mx", `${x * 100}%`);
+        card.style.setProperty("--my", `${y * 100}%`);
+      });
+      card.addEventListener("pointerleave", () => {
+        card.style.setProperty("--rx", "0deg");
+        card.style.setProperty("--ry", "0deg");
+      });
+    });
+  }
+
   /* ===== دستة الكروت في شاشة البداية ===== */
   function bindDeck() {
     const deck = UI.$("#deck");
@@ -131,20 +150,27 @@ WB.App = (() => {
   }
 
   async function quit(skipConfirm) {
-    if (!skipConfirm && ctrl && ctrl.inGame()) {
+    if (!skipConfirm && ctrl && ctrl.inGame() && matchRunning()) {
       const online = ctrl.kind === "online";
       const ok = await UI.confirm(
-        "تطلع من المباراة؟",
-        online ? "بتطلع من الغرفة. إذا كنت المضيف، الغرفة بتنقفل على الكل." : "تقدر تكمّلها بعدين من شاشة البداية.",
-        "اطلع"
+        "تبي تنهي المباراة؟",
+        online
+          ? "بتطلع من الغرفة. وإذا كنت المضيف، المباراة بتنتهي على الكل نهائياً."
+          : "المباراة بتنتهي نهائياً والنتيجة بتروح، وما تقدرون ترجعون لها.",
+        "إيه، أنهِها"
       );
       if (!ok) return;
     }
-    if (ctrl && ctrl.kind === "online") ctrl.quit();
-    if (ctrl && ctrl.kind === "local" && UI.current() === "win") ctrl.quit();
-    if (ctrl && ctrl.kind === "local") UI.Timer.stop();
+    if (ctrl) ctrl.quit();
     ctrl = null;
     goHome();
+  }
+
+  /** فيه مباراة شغالة ما خلصت؟ (غرفة الانتظار وشاشة الفوز ما تحتاج تحذير) */
+  function matchRunning() {
+    if (!ctrl || !ctrl.inGame()) return false;
+    const scr = UI.current() === "settings" ? UI.previous() : UI.current();
+    return ["turn", "reveal", "play", "result"].includes(scr) || (ctrl.kind === "online" && scr === "online");
   }
 
   const actions = {
@@ -152,7 +178,6 @@ WB.App = (() => {
     "go-mode": () => UI.show("mode"),
     "go-setup": () => { ctrl = Local; Local.openSetup(); },
     "go-online": () => { ctrl = Online; Online.openEntry(); },
-    "resume-local": () => { ctrl = Local; Local.resume(); },
     "start-local": () => { ctrl = Local; Local.start(); },
     "open-settings": openSettings,
     "close-settings": closeSettings,
@@ -285,6 +310,7 @@ WB.App = (() => {
     bind();
     bindDeck();
     bindSwipe();
+    bindTilt();
     refreshHome();
     UI.show("home");
     const linkRoom = WB.Share.takeRoomFromUrl();
@@ -296,6 +322,10 @@ WB.App = (() => {
       // فتح اللعبة من QR أو رابط غرفة: شاشة الدخول والرمز جاهز
       ctrl = Online;
       Online.openWithCode(linkRoom);
+    } else if (Local.hasSession()) {
+      // تحديث الصفحة وسط مباراة جهاز واحد: نرجع لها بدون أي سؤال
+      ctrl = Local;
+      Local.restore();
     }
   }
 

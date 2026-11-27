@@ -73,7 +73,6 @@
           <p class="home-tag">اشرح بدون ما تقولها… وخلّ فريقك يجيبها قبل لا يخلص الوقت.</p>
           <div class="home-actions">
             <button class="btn btn-primary btn-xl" data-action="go-mode">يلا نلعب</button>
-            <button class="btn btn-soft" data-action="resume-local" id="resumeBtn" hidden>كمّل المباراة السابقة</button>
             <div class="home-row">
               <button class="btn btn-ghost" data-action="open-share"><svg><use href="#i-share"/></svg>شارك اللعبة</button>
               <button class="btn btn-ghost" data-action="open-settings"><svg><use href="#i-gear"/></svg>الإعدادات</button>
@@ -96,14 +95,46 @@
         </div>
         <div class="mode-grid">
           <button class="mode-card mode-local" data-action="go-setup">
-            <span class="mode-icon"><svg><use href="#i-phone"/></svg></span>
+            <span class="mode-art" aria-hidden="true">
+              <svg viewBox="0 0 240 120">
+                <path class="trail" d="M40 70 Q 120 20 200 70" />
+                <g class="avatars">
+                  <circle cx="40" cy="92" r="13" class="av-a"/><circle cx="93" cy="92" r="13" class="av-b"/>
+                  <circle cx="147" cy="92" r="13" class="av-a"/><circle cx="200" cy="92" r="13" class="av-b"/>
+                </g>
+                <g class="passer">
+                  <g class="passer-move">
+                    <rect x="-12" y="20" width="24" height="40" rx="6" class="ph"/>
+                    <text x="0" y="46" text-anchor="middle" class="ph-q">؟</text>
+                  </g>
+                </g>
+              </svg>
+            </span>
             <span class="mode-title">جهاز واحد</span>
             <span class="mode-desc">مجتمعين حول جوال أو لابتوب واحد، والجهاز يتنقّل بين الشارحين.</span>
+            <span class="mode-tags"><i>جوال واحد يكفي</i><i>من ٤ لاعبين</i></span>
           </button>
           <button class="mode-card mode-online" data-action="go-online">
-            <span class="mode-icon"><svg><use href="#i-phones"/></svg></span>
+            <span class="mode-art" aria-hidden="true">
+              <svg viewBox="0 0 240 120">
+                <g class="links">
+                  <path d="M120 60 L45 30"/><path d="M120 60 L195 30"/>
+                  <path d="M120 60 L60 98"/><path d="M120 60 L180 98"/>
+                </g>
+                <circle cx="120" cy="60" r="9" class="hub"/>
+                <circle cx="120" cy="60" r="9" class="pulse"/>
+                <circle cx="120" cy="60" r="9" class="pulse p2"/>
+                <g class="phones">
+                  <rect x="33" y="12" width="24" height="36" rx="6" class="ph lit"/><text x="45" y="36" text-anchor="middle" class="ph-q">؟</text>
+                  <rect x="183" y="12" width="24" height="36" rx="6" class="ph"/>
+                  <rect x="48" y="80" width="24" height="36" rx="6" class="ph"/>
+                  <rect x="168" y="80" width="24" height="36" rx="6" class="ph"/>
+                </g>
+              </svg>
+            </span>
             <span class="mode-title">كل واحد من جواله</span>
             <span class="mode-desc">سوّ غرفة، شارك الرمز، والكلمة تطلع للشارح بس على جهازه.</span>
+            <span class="mode-tags"><i>دخول بالـ QR</i><i>الكلمة عند الشارح بس</i></span>
           </button>
         </div>
       </section>
