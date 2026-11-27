@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0c12" />
+  <title>وِش الكلمة؟ | Word Battle</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- أيقونات SVG مشتركة -->
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-gear" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4Z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M19.4 13.5a7.6 7.6 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.5 7.5 0 0 0-2.6-1.5L14 2.6h-4l-.5 2.4a7.5 7.5 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.6 7.6 0 0 0 0 3l-2 1.5 2 3.4 2.3-.9a7.5 7.5 0 0 0 2.6 1.5l.5 2.4h4l.5-2.4a7.5 7.5 0 0 0 2.6-1.5l2.3.9 2-3.4-2-1.5Z"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M6 6l12 12M18 6 6 18"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-back" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-phone" viewBox="0 0 24 24"><rect x="6.5" y="2.5" width="11" height="19" rx="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M10.5 18.2h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></symbol>
+    <symbol id="i-phones" viewBox="0 0 24 24"><rect x="2.5" y="5" width="8.5" height="15" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><rect x="13" y="3" width="8.5" height="15" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11 12.5h2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="1 2"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" d="M7 7l10 10M17 7 7 17"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M16 5.5A2.5 2.5 0 0 0 13.5 3h-7A2.5 2.5 0 0 0 4 5.5v7A2.5 2.5 0 0 0 6.5 15" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-crown" viewBox="0 0 24 24"><path fill="currentColor" d="M3 7.5l4.6 3.8L12 4.5l4.4 6.8L21 7.5l-1.8 10.5H4.8L3 7.5Zm2 12h14v1.8H5V19.5Z"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M4.5 7h15M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></symbol>
+    <symbol id="i-eye" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+    <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 10.5 12 4l8 6.5V20h-5.5v-5.5h-5V20H4v-9.5Z"/></symbol>
+    <symbol id="i-shuffle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 7h3.5c2.5 0 3.8 1.2 5.5 5s3 5 5.5 5H21m0 0-3-3m3 3-3 3M3 17h3.5c1.3 0 2.2-.3 3-1M21 7h-3.5c-1.3 0-2.2.3-3 1M21 7l-3-3m3 3-3 3"/></symbol>
+  </svg>
+
+  <div class="bg-deco" aria-hidden="true"><span></span><span></span></div>
+
+  <div id="app">
+    <!-- شريط المباراة (يظهر أثناء اللعب) -->
+    <header id="gamebar" class="gamebar" hidden>
+      <button class="icon-btn" data-action="quit" aria-label="خروج من المباراة"><svg><use href="#i-home"/></svg></button>
+      <div class="mini-score">
+        <div class="ms-team ms-a"><span class="ms-name" data-bind="teamA"></span><b data-bind="scoreA">0</b></div>
+        <div class="ms-target"><span>الهدف</span><b data-bind="target">10</b></div>
+        <div class="ms-team ms-b"><b data-bind="scoreB">0</b><span class="ms-name" data-bind="teamB"></span></div>
+      </div>
+      <button class="icon-btn" data-action="open-settings" aria-label="الإعدادات"><svg><use href="#i-gear"/></svg></button>
+    </header>
+    <p id="netBanner" class="banner" hidden></p>
+
+    <main id="screens">
+
+      <!-- 1. شاشة البداية -->
+      <section class="screen" data-screen="home">
+        <div class="home">
+          <div class="logo" aria-label="وِش الكلمة؟">
+            <div class="logo-card logo-card-1"></div>
+            <div class="logo-card logo-card-2"></div>
+            <h1 class="logo-title"><span>وِش</span> <span>الكلمة</span><i class="logo-q">؟</i></h1>
+          </div>
+          <p class="home-tag">اشرح بدون ما تقولها… وخلّ فريقك يجيبها قبل لا يخلص الوقت.</p>
+          <div class="home-actions">
+            <button class="btn btn-primary btn-xl" data-action="go-mode">يلا نلعب</button>
+            <button class="btn btn-soft" data-action="resume-local" id="resumeBtn" hidden>كمّل المباراة السابقة</button>
+            <button class="btn btn-ghost" data-action="open-settings"><svg><use href="#i-gear"/></svg>الإعدادات</button>
+          </div>
+          <ol class="how">
+            <li><b>١</b><span>فريقين، وكل دور ينختار شارح عشوائي.</span></li>
+            <li><b>٢</b><span>الشارح يشوف الكلمة ويشرحها بدون ما يذكرها.</span></li>
+            <li><b>٣</b><span>جابوها؟ نقطة. والدور ينتقل للفريق الثاني.</span></li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- 3. اختيار طريقة اللعب -->
+      <section class="screen" data-screen="mode">
+        <div class="topline">
+          <button class="icon-btn" data-action="go-home" aria-label="رجوع"><svg><use href="#i-back"/></svg></button>
+          <h2>كيف بتلعبون؟</h2>
+          <span class="spacer"></span>
+        </div>
+        <div class="mode-grid">
+          <button class="mode-card mode-local" data-action="go-setup">
+            <span class="mode-icon"><svg><use href="#i-phone"/></svg></span>
+            <span class="mode-title">جهاز واحد</span>
+            <span class="mode-desc">مجتمعين حول جوال أو لابتوب واحد، والجهاز يتنقّل بين الشارحين.</span>
+          </button>
+          <button class="mode-card mode-online" data-action="go-online">
+            <span class="mode-icon"><svg><use href="#i-phones"/></svg></span>
+            <span class="mode-title">كل واحد من جواله</span>
+            <span class="mode-desc">سوّ غرفة، شارك الرمز، والكلمة تطلع للشارح بس على جهازه.</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 2. إعداد الفرق واللاعبين (محلي) -->
+      <section class="screen" data-screen="setup">
+        <div class="topline">
+          <button class="icon-btn" data-action="go-mode" aria-label="رجوع"><svg><use href="#i-back"/></svg></button>
+          <h2>الفرق واللاعبين</h2>
+          <span class="spacer"></span>
+        </div>
+        <div class="teams-grid" id="setupTeams"></div>
+        <div class="panel">
+          <div class="panel-row">
+            <label for="setupTime">وقت الجولة</label>
+            <div class="stepper" data-stepper="roundTime"></div>
+          </div>
+          <div class="panel-row">
+            <label for="setupTarget">نقاط الفوز</label>
+            <div class="stepper" data-stepper="target"></div>
+          </div>
+          <div class="panel-block">
+            <span class="label">الفئات</span>
+            <div class="chips" data-categories="setup"></div>
+          </div>
+        </div>
+        <p class="form-error" id="setupError" role="alert"></p>
+        <div class="sticky-cta">
+          <button class="btn btn-primary btn-xl" data-action="start-local">ابدأ المباراة</button>
+        </div>
+      </section>
+
+      <!-- اللعب عبر الإنترنت: دخول/غرفة -->
+      <section class="screen" data-screen="online">
+        <div class="topline">
+          <button class="icon-btn" data-action="online-back" aria-label="رجوع"><svg><use href="#i-back"/></svg></button>
+          <h2 id="onlineTitle">اللعب من الجوالات</h2>
+          <span class="spacer"></span>
+        </div>
+        <div id="onlineNotice" class="notice" hidden></div>
+
+        <!-- نموذج الدخول -->
+        <div id="onlineEntry">
+          <div class="panel">
+            <label class="field">
+              <span class="label">اسمك</span>
+              <input id="onName" type="text" maxlength="16" placeholder="مثلاً: أبو فهد" autocomplete="nickname" />
+            </label>
+          </div>
+          <div class="entry-split">
+            <div class="panel entry-card">
+              <h3>سوّ غرفة جديدة</h3>
+              <p class="muted">بتكون أنت المضيف وتتحكم بالإعدادات.</p>
+              <button class="btn btn-primary" data-action="online-create">إنشاء غرفة</button>
+            </div>
+            <div class="panel entry-card">
+              <h3>ادخل غرفة</h3>
+              <input id="onCode" class="code-input" type="text" maxlength="5" placeholder="رمز الغرفة" autocomplete="off" autocapitalize="characters" spellcheck="false" />
+              <button class="btn btn-soft" data-action="online-join">دخول</button>
+            </div>
+          </div>
+          <p class="form-error" id="onlineError" role="alert"></p>
+        </div>
+
+        <!-- اللوبي -->
+        <div id="onlineLobby" hidden>
+          <div class="room-code">
+            <span class="label">رمز الغرفة</span>
+            <button class="code-big" data-action="copy-code" title="نسخ"><span id="roomCode">-----</span><svg><use href="#i-copy"/></svg></button>
+            <span class="muted small" id="copyHint">شاركه مع الشلة عشان يدخلون</span>
+          </div>
+          <div class="teams-grid" id="lobbyTeams"></div>
+          <div class="panel" id="lobbySettings"></div>
+          <p class="form-error" id="lobbyError" role="alert"></p>
+          <div class="sticky-cta">
+            <button class="btn btn-primary btn-xl" data-action="online-start" id="lobbyStart">ابدأ المباراة</button>
+            <p class="muted center" id="lobbyWait" hidden>بانتظار المضيف يبدأ المباراة…</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. انتظار اللاعبين واستلام الدور -->
+      <section class="screen" data-screen="turn">
+        <div class="turn" id="turnView"></div>
+      </section>
+
+      <!-- 5. عرض الكلمة السرية -->
+      <section class="screen" data-screen="reveal">
+        <div class="reveal">
+          <p class="eyebrow">كلمتك السرية</p>
+          <div class="word-card" id="revealCard">
+            <span class="word-cat" id="revealCat"></span>
+            <span class="word-text" id="revealWord"></span>
+          </div>
+          <p class="muted center">لا تقولها ولا تقول جزء منها. لما تكون جاهز ابدأ الوقت.</p>
+          <button class="btn btn-primary btn-xl" data-action="start-timer"><svg><use href="#i-play"/></svg>ابدأ الوقت</button>
+        </div>
+      </section>
+
+      <!-- 6. اللعب والمؤقت -->
+      <section class="screen" data-screen="play">
+        <div class="play">
+          <div class="timer" id="timer">
+            <svg viewBox="0 0 120 120" class="timer-ring" aria-hidden="true">
+              <circle cx="60" cy="60" r="54" class="ring-bg"/>
+              <circle cx="60" cy="60" r="54" class="ring-fg" id="timerRing"/>
+            </svg>
+            <div class="timer-num"><b id="timerNum">60</b><span>ثانية</span></div>
+          </div>
+          <div id="playExplainer">
+            <div class="word-card word-card-sm" id="playCard">
+              <span class="word-cat" id="playCat"></span>
+              <span class="word-text" id="playWord"></span>
+            </div>
+            <p class="timeup-msg" id="timeupMsg" hidden>خلص الوقت! جابوها ولا لا؟</p>
+            <div class="verdict">
+              <button class="btn btn-got" data-action="got"><svg><use href="#i-check"/></svg>جابوها</button>
+              <button class="btn btn-miss" data-action="miss"><svg><use href="#i-x"/></svg>ما جابوها</button>
+            </div>
+          </div>
+          <div id="playWatcher" hidden>
+            <p class="watch-title" id="watchTitle"></p>
+            <p class="muted center" id="watchSub"></p>
+            <button class="btn btn-ghost btn-sm" id="hostSkip" data-action="skip-turn" hidden><svg><use href="#i-shuffle"/></svg>تخطي الدور</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 7. النتيجة -->
+      <section class="screen" data-screen="result">
+        <div class="result" id="resultView"></div>
+      </section>
+
+      <!-- 8. الفوز -->
+      <section class="screen" data-screen="win">
+        <div class="win" id="winView"></div>
+      </section>
+
+      <!-- 9. الإعدادات -->
+      <section class="screen" data-screen="settings">
+        <div class="topline">
+          <button class="icon-btn" data-action="close-settings" aria-label="رجوع"><svg><use href="#i-back"/></svg></button>
+          <h2>الإعدادات</h2>
+          <span class="spacer"></span>
+        </div>
+        <div class="panel">
+          <h3 class="panel-title">الصوت</h3>
+          <div class="panel-row">
+            <label for="setSound">الأصوات</label>
+            <label class="switch"><input type="checkbox" id="setSound" data-setting="sound" /><span></span></label>
+          </div>
+          <div class="panel-row">
+            <label for="setVolume">مستوى المؤثرات</label>
+            <input type="range" id="setVolume" min="0" max="100" step="5" data-setting="volume" />
+          </div>
+          <div class="panel-row">
+            <label for="setTicks">تكتكة آخر ١٠ ثواني</label>
+            <label class="switch"><input type="checkbox" id="setTicks" data-setting="ticks" /><span></span></label>
+          </div>
+          <div class="panel-row">
+            <label for="setVibrate">الاهتزاز</label>
+            <label class="switch"><input type="checkbox" id="setVibrate" data-setting="vibrate" /><span></span></label>
+          </div>
+        </div>
+        <div class="panel">
+          <h3 class="panel-title">المباراة</h3>
+          <div class="panel-row">
+            <label>وقت الجولة</label>
+            <div class="stepper" data-stepper="roundTime"></div>
+          </div>
+          <div class="panel-row">
+            <label>نقاط الفوز</label>
+            <div class="stepper" data-stepper="target"></div>
+          </div>
+          <p class="muted small" id="settingsOnlineNote" hidden>في اللعب الجماعي، المضيف هو اللي يتحكم بوقت الجولة ونقاط الفوز.</p>
+        </div>
+        <div class="panel">
+          <h3 class="panel-title">الكلمات</h3>
+          <div class="panel-row">
+            <span>إعادة بنك الكلمات من البداية</span>
+            <button class="btn btn-ghost btn-sm" data-action="reset-words">إعادة</button>
+          </div>
+        </div>
+        <button class="btn btn-ghost" data-action="quit"><svg><use href="#i-home"/></svg>العودة إلى القائمة الرئيسية</button>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- نافذة تأكيد -->
+  <div class="modal" id="modal" hidden>
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <h3 id="modalTitle"></h3>
+      <p id="modalText" class="muted"></p>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="modalOk">تمام</button>
+        <button class="btn btn-ghost" id="modalCancel">إلغاء</button>
+      </div>
+    </div>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/config.js"></script>
+  <script src="js/words.js"></script>
+  <script src="js/store.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/local.js"></script>
+  <script src="js/transport.js"></script>
+  <script src="js/online.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
