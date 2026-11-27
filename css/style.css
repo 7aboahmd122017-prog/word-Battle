@@ -32,6 +32,12 @@
 
   --font: "IBM Plex Sans Arabic", system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
   --font-display: "Readex Pro", var(--font);
+  --font-art: "Lalezar", var(--font-display);
+
+  /* ظهر الكرت: نقوش يدوية */
+  --card-back:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 60 60'%3E%3Cg fill='none' stroke='%238f7bff' stroke-opacity='.28' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M8 14c6-8 16-2 10 5-3 4-6 4-6 8M12 31v1'/%3E%3Cpath d='M38 40c5-5 10 5 15 0'/%3E%3Ccircle cx='44' cy='14' r='4'/%3E%3C/g%3E%3C/svg%3E"),
+    linear-gradient(165deg, #1f1b3b, #13122a);
 
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   --shadow: 0 10px 30px -12px rgba(0, 0, 0, 0.6);
@@ -152,27 +158,55 @@ p { margin: 0; }
 
 /* ===== البداية ===== */
 .home { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 24px 0; }
-.logo { position: relative; width: 100%; max-width: 360px; height: 190px; display: grid; place-items: center; }
-.logo-card {
-  position: absolute; width: 150px; height: 104px; border-radius: 20px;
-  border: 1px solid var(--line-2);
-}
-.logo-card-1 { background: linear-gradient(160deg, rgba(143,123,255,0.28), rgba(143,123,255,0.05)); transform: rotate(-9deg) translate(54px, -6px); animation: float1 6s ease-in-out infinite; }
-.logo-card-2 { background: linear-gradient(160deg, rgba(63,224,181,0.24), rgba(63,224,181,0.04)); transform: rotate(7deg) translate(-56px, 10px); animation: float2 7s ease-in-out infinite; }
-@keyframes float1 { 50% { transform: rotate(-7deg) translate(54px, -12px); } }
-@keyframes float2 { 50% { transform: rotate(9deg) translate(-56px, 4px); } }
 .logo-title {
-  position: relative; font-size: clamp(2.6rem, 11vw, 3.6rem); font-weight: 700; letter-spacing: -0.01em;
-  display: flex; align-items: baseline; gap: 0.25em;
+  position: relative; font-family: var(--font-art); font-weight: 400;
+  font-size: clamp(3.2rem, 15vw, 4.8rem); line-height: 1.1;
+  display: flex; align-items: center; gap: 0.12em;
+  background: linear-gradient(100deg, #fff 30%, #cfc6ff 60%, var(--violet));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  text-shadow: none;
 }
-.logo-title span:first-child { color: var(--violet); }
 .logo-q {
   font-style: normal; display: inline-grid; place-items: center;
-  width: 1.05em; height: 1.05em; margin-inline-start: 0.08em;
-  font-size: 0.72em; border-radius: 0.3em;
-  background: var(--mint); color: #05241b;
-  transform: rotate(-8deg) translateY(-0.12em);
-  box-shadow: 0 8px 22px -8px rgba(63,224,181,0.7);
+  width: 0.95em; height: 0.95em; font-size: 0.78em; border-radius: 0.28em;
+  background: var(--mint); color: #05241b; -webkit-text-fill-color: #05241b;
+  transform: rotate(-10deg);
+  box-shadow: 0 10px 26px -8px rgba(63,224,181,0.7);
+  animation: wobble 3.6s ease-in-out infinite;
+}
+@keyframes wobble { 0%, 100% { transform: rotate(-10deg); } 50% { transform: rotate(4deg) translateY(-4px); } }
+
+/* دستة الكروت في البداية */
+.deck {
+  position: relative; width: 200px; height: 250px; border: 0; padding: 0; background: none;
+  transform: perspective(900px) rotateX(var(--ry, 0deg)) rotateY(var(--rx, 0deg));
+  transition: transform 0.25s var(--ease);
+  transform-style: preserve-3d;
+}
+.deck-card {
+  position: absolute; inset: 0; border-radius: 26px;
+  border: 1px solid var(--line-2);
+  background: var(--card-back);
+  box-shadow: 0 22px 40px -22px rgba(0,0,0,0.8);
+  transition: transform 0.5s var(--ease), opacity 0.5s;
+}
+.dc-3 { transform: rotate(-12deg) translate(30px, 8px); filter: brightness(0.7); }
+.dc-2 { transform: rotate(9deg) translate(-26px, 4px); filter: brightness(0.85); }
+.dc-1 {
+  display: grid; place-content: center; justify-items: center; gap: 10px;
+  background: linear-gradient(165deg, #241f45, #16142a 70%);
+  border-color: rgba(143,123,255,0.35);
+}
+.dc-1 b { font-size: 0.85rem; font-weight: 600; color: #cfc6ff; padding: 4px 12px; border-radius: 99px; background: rgba(143,123,255,0.14); }
+.dc-1 i { font-style: normal; font-family: var(--font-art); font-size: 5.5rem; line-height: 1; color: var(--mint); }
+.deck.dealing .dc-1 { transform: translate(-140%, -30px) rotate(-28deg); opacity: 0; }
+.deck:active .dc-1 { transform: scale(0.97); }
+.deck:focus-visible { outline: 2px solid var(--blue); outline-offset: 8px; border-radius: 26px; }
+@media (max-height: 760px) {
+  .home { gap: 18px; padding: 8px 0; }
+  .deck { width: 150px; height: 186px; }
+  .dc-1 i { font-size: 4rem; }
+  .how { display: none; }
 }
 .home-tag { color: var(--muted); text-align: center; max-width: 30ch; font-size: 1.02rem; }
 .home-actions { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; }
@@ -387,30 +421,63 @@ input[type="range"] { width: 46%; accent-color: var(--violet); }
 /* ===== الكلمة ===== */
 .reveal { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; padding: 12px 0; }
 .reveal .btn-xl { margin-top: 6px; }
-.word-card {
-  position: relative; display: grid; justify-items: center; gap: 10px;
-  padding: 44px 20px; border-radius: var(--r-xl);
-  background:
-    radial-gradient(120% 90% at 50% 0%, rgba(143,123,255,0.18), transparent 60%),
-    var(--surface);
-  border: 1px solid rgba(143,123,255,0.28);
+/* كرت الكلمة القابل للقلب */
+.flip {
+  position: relative; perspective: 1200px; cursor: pointer;
+  min-height: 250px; outline: none; -webkit-user-select: none; user-select: none;
+}
+.flip-sm { min-height: 170px; }
+.flip-inner {
+  position: absolute; inset: 0; transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.flip.shown .flip-inner { transform: rotateY(180deg); }
+.flip:focus-visible .flip-inner { outline: 2px solid var(--blue); outline-offset: 4px; border-radius: var(--r-xl); }
+.flip-face {
+  position: absolute; inset: 0; border-radius: var(--r-xl);
+  -webkit-backface-visibility: hidden; backface-visibility: hidden;
+}
+.flip-back {
+  display: grid; place-items: center;
+  background: var(--card-back);
+  border: 1px solid rgba(143,123,255,0.35);
   box-shadow: var(--shadow);
-  animation: flipIn 0.55s var(--ease);
+}
+.flip-back i { font-style: normal; font-family: var(--font-art); font-size: 6rem; color: var(--mint); line-height: 1; }
+.flip-sm .flip-back i { font-size: 4rem; }
+.flip-face.word-card { transform: rotateY(180deg); }
+.flip.fly .flip-inner { animation: flyUp 0.5s var(--ease) forwards; }
+.flip.shake .flip-inner { animation: shakeDrop 0.5s ease forwards; }
+@keyframes flyUp { to { transform: rotateY(180deg) translateY(-120px) scale(0.8); opacity: 0; } }
+@keyframes shakeDrop {
+  0%, 100% { transform: rotateY(180deg); }
+  20% { transform: rotateY(180deg) translateX(-14px) rotate(-3deg); }
+  40% { transform: rotateY(180deg) translateX(12px) rotate(3deg); }
+  60% { transform: rotateY(180deg) translateX(-8px); }
+  80% { transform: rotateY(180deg) translateY(30px); opacity: 0.4; }
+}
+
+.word-card {
+  display: grid; place-content: center; justify-items: center; gap: 12px;
+  padding: 24px 20px; border-radius: var(--r-xl);
+  background:
+    radial-gradient(120% 90% at 50% 0%, rgba(143,123,255,0.2), transparent 60%),
+    var(--surface);
+  border: 1px solid rgba(143,123,255,0.3);
+  box-shadow: var(--shadow);
   overflow: hidden;
 }
-@keyframes flipIn { from { opacity: 0; transform: perspective(800px) rotateX(-35deg) translateY(10px); } }
 .word-cat {
   font-size: 0.8rem; color: var(--blue); padding: 4px 12px; border-radius: 99px;
   background: rgba(76,157,255,0.1); border: 1px solid rgba(76,157,255,0.2);
 }
 .word-text {
-  font-family: var(--font-display); font-weight: 700; text-align: center;
-  font-size: clamp(2rem, 9vw, 3.1rem); line-height: 1.35; word-break: break-word;
+  font-family: var(--font-art); font-weight: 400; text-align: center;
+  font-size: clamp(2.6rem, 12vw, 4rem); line-height: 1.3; word-break: break-word;
 }
-.word-text.long { font-size: clamp(1.5rem, 6.5vw, 2.2rem); }
-.word-card-sm { padding: 26px 18px; }
-.word-card-sm .word-text { font-size: clamp(1.7rem, 7.5vw, 2.5rem); }
-.word-card-sm .word-text.long { font-size: clamp(1.3rem, 5.5vw, 1.9rem); }
+.word-text.long { font-size: clamp(1.7rem, 7.5vw, 2.5rem); }
+.flip-sm .word-text { font-size: clamp(2.1rem, 9vw, 3rem); }
+.flip-sm .word-text.long { font-size: clamp(1.4rem, 6vw, 2rem); }
 
 /* ===== المؤقت ===== */
 .play { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 22px; }
@@ -512,3 +579,44 @@ input[type="range"] { width: 46%; accent-color: var(--violet); }
 @media (min-width: 760px) {
   #app { padding-top: 32px; }
 }
+
+/* ===== الطابع الفني ===== */
+.doodles {
+  position: fixed; inset: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none;
+  transform: translate(var(--px, 0), var(--py, 0));
+  transition: transform 0.6s var(--ease);
+  opacity: 0.55;
+}
+.doodles .d-v { stroke: rgba(143,123,255,0.35); }
+.doodles .d-m { stroke: rgba(63,224,181,0.3); }
+.doodles .d-b { stroke: rgba(76,157,255,0.3); }
+
+/* لون الخلفية يتبع الفريق اللي عليه الدور */
+.bg-deco span { transition: background 1.2s ease, opacity 1.2s ease; }
+body[data-team="b"] .bg-deco span:first-child { background: var(--mint-deep); }
+body[data-team="b"] .bg-deco span:last-child { background: var(--violet-deep); }
+
+/* آخر ثواني: توهج أحمر حول الشاشة */
+body::before {
+  content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 2;
+  box-shadow: inset 0 0 0 0 rgba(255,107,122,0);
+  transition: box-shadow 0.4s;
+}
+body.hurry::before { animation: hurry 1s ease-in-out infinite; }
+@keyframes hurry {
+  50% { box-shadow: inset 0 0 70px 6px rgba(255,107,122,0.35); }
+}
+
+/* خط فني للأرقام والأسماء الكبيرة */
+.timer-num b, .score-card .sc-num, .ms-team b, .turn .who, .handoff-avatar, .win h1 {
+  font-family: var(--font-art); font-weight: 400;
+}
+.turn .who { font-size: 2.4rem; }
+.win h1 { font-size: clamp(2.2rem, 10vw, 3.2rem); }
+
+/* ضغطة الأزرار: ارتداد خفيف */
+.btn-primary:active, .btn-got:active { transform: scale(0.95) translateY(1px); }
+
+/* شرارات عند "جابوها" */
+.spark { position: fixed; width: 8px; height: 8px; border-radius: 50%; pointer-events: none; z-index: 6; animation: spark 0.7s ease-out forwards; }
+@keyframes spark { to { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; } }

@@ -7,7 +7,7 @@
   <title>وِش الكلمة؟ | Word Battle</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Lalezar&family=Readex+Pro:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
@@ -32,6 +32,19 @@
 
   <div class="bg-deco" aria-hidden="true"><span></span><span></span></div>
 
+  <!-- رسومات يدوية خفيفة بالخلفية -->
+  <svg class="doodles" aria-hidden="true" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice">
+    <g fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="3">
+      <path class="d-v" d="M90 160c18-26 52-30 64-6 10 22-16 34-28 50-6 10-4 20 2 26M128 262v1"/>
+      <path class="d-m" d="M820 120l10 26 28 2-22 17 8 27-24-15-23 15 8-27-22-17 28-2z"/>
+      <path class="d-b" d="M860 520c-30-4-44 22-28 38 18 18 48-4 34-26-12-18-44-10-46 14-2 30 40 44 62 22"/>
+      <path class="d-v" d="M60 640c20-18 40 18 60 0s40 18 60 0 40 18 60 0"/>
+      <path class="d-m" d="M700 860c0-28 22-46 50-46h70c28 0 50 18 50 46s-22 46-50 46h-58l-30 26 6-28c-22-6-38-22-38-44z"/>
+      <path class="d-b" d="M210 900l14-30 14 30M224 870v-1M300 380l8 8m0-8-8 8"/>
+      <path class="d-m" d="M560 70c6 0 10 4 10 10s-4 10-10 10-10-4-10-10 4-10 10-10z"/>
+    </g>
+  </svg>
+
   <div id="app">
     <!-- شريط المباراة (يظهر أثناء اللعب) -->
     <header id="gamebar" class="gamebar" hidden>
@@ -50,11 +63,12 @@
       <!-- 1. شاشة البداية -->
       <section class="screen" data-screen="home">
         <div class="home">
-          <div class="logo" aria-label="وِش الكلمة؟">
-            <div class="logo-card logo-card-1"></div>
-            <div class="logo-card logo-card-2"></div>
-            <h1 class="logo-title"><span>وِش</span> <span>الكلمة</span><i class="logo-q">؟</i></h1>
-          </div>
+          <h1 class="logo-title" aria-label="وِش الكلمة؟">وِش الكلمة<i class="logo-q">؟</i></h1>
+          <button type="button" class="deck" id="deck" aria-label="اقلب كرت من الدّستة">
+            <span class="deck-card dc-3"></span>
+            <span class="deck-card dc-2"></span>
+            <span class="deck-card dc-1"><b id="deckCat">أكل ومشروبات</b><i>؟</i></span>
+          </button>
           <p class="home-tag">اشرح بدون ما تقولها… وخلّ فريقك يجيبها قبل لا يخلص الوقت.</p>
           <div class="home-actions">
             <button class="btn btn-primary btn-xl" data-action="go-mode">يلا نلعب</button>
@@ -176,11 +190,16 @@
       <section class="screen" data-screen="reveal">
         <div class="reveal">
           <p class="eyebrow">كلمتك السرية</p>
-          <div class="word-card" id="revealCard">
-            <span class="word-cat" id="revealCat"></span>
-            <span class="word-text" id="revealWord"></span>
+          <div class="flip" id="revealCard" role="button" tabindex="0" aria-label="اضغط لإخفاء أو إظهار الكلمة">
+            <div class="flip-inner">
+              <div class="flip-face flip-back"><i>؟</i></div>
+              <div class="flip-face word-card">
+                <span class="word-cat" id="revealCat"></span>
+                <span class="word-text" id="revealWord"></span>
+              </div>
+            </div>
           </div>
-          <p class="muted center">لا تقولها ولا تقول جزء منها. لما تكون جاهز ابدأ الوقت.</p>
+          <p class="muted center">لا تقولها ولا تقول جزء منها. اضغط الكرت إذا تبي تخفيها.</p>
           <button class="btn btn-primary btn-xl" data-action="start-timer"><svg><use href="#i-play"/></svg>ابدأ الوقت</button>
         </div>
       </section>
@@ -196,9 +215,14 @@
             <div class="timer-num"><b id="timerNum">60</b><span>ثانية</span></div>
           </div>
           <div id="playExplainer">
-            <div class="word-card word-card-sm" id="playCard">
-              <span class="word-cat" id="playCat"></span>
-              <span class="word-text" id="playWord"></span>
+            <div class="flip flip-sm" id="playCard" role="button" tabindex="0" aria-label="اضغط لإخفاء أو إظهار الكلمة">
+              <div class="flip-inner">
+                <div class="flip-face flip-back"><i>؟</i></div>
+                <div class="flip-face word-card">
+                  <span class="word-cat" id="playCat"></span>
+                  <span class="word-text" id="playWord"></span>
+                </div>
+              </div>
             </div>
             <p class="timeup-msg" id="timeupMsg" hidden>خلص الوقت! جابوها ولا لا؟</p>
             <div class="verdict">

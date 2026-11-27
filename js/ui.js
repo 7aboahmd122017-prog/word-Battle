@@ -35,6 +35,7 @@ WB.UI = (() => {
     bind("scoreA", s.teams[0].score);
     bind("scoreB", s.teams[1].score);
     bind("target", s.settings.target);
+    document.body.dataset.team = s.turnTeam === 1 ? "b" : "a";
   }
 
   /* ===== عناصر الإعدادات المشتركة ===== */
@@ -104,16 +105,61 @@ WB.UI = (() => {
   }
 
   /* ===== عرض الكلمة ===== */
-  function fillWord(card, catEl, wordEl, word) {
+  let flipTimer = null;
+  /** يعبّي الكرت. animate: يبدأ مقلوب ثم ينقلب ليكشف الكلمة */
+  function fillWord(card, catEl, wordEl, word, animate) {
     catEl.textContent = word.catName;
     wordEl.textContent = word.text;
-    wordEl.classList.toggle("long", word.text.length > 14);
-    card.style.animation = "none";
-    void card.offsetWidth;
-    card.style.animation = "";
+    wordEl.classList.toggle("long", word.text.length > 12);
+    card.classList.remove("fly", "shake");
+    clearTimeout(flipTimer);
+    if (animate) {
+      card.classList.remove("shown");
+      flipTimer = setTimeout(() => card.classList.add("shown"), 380);
+    } else {
+      const inner = card.querySelector(".flip-inner");
+      inner.style.transition = "none";
+      card.classList.add("shown");
+      void inner.offsetWidth;
+      inner.style.transition = "";
+    }
   }
   function renderReveal(word) {
-    fillWord($("#revealCard"), $("#revealCat"), $("#revealWord"), word);
+    fillWord($("#revealCard"), $("#revealCat"), $("#revealWord"), word, true);
+  }
+
+  // الضغط على الكرت يخفي الكلمة أو يظهرها
+  function toggleFlip(card) {
+    card.classList.toggle("shown");
+    WB.Sound.play("tap");
+  }
+  document.addEventListener("click", (e) => {
+    const card = e.target.closest(".flip");
+    if (card) toggleFlip(card);
+  });
+  document.addEventListener("keydown", (e) => {
+    if ((e.key === "Enter" || e.key === " ") && e.target.classList && e.target.classList.contains("flip")) {
+      e.preventDefault();
+      toggleFlip(e.target);
+    }
+  });
+
+  /** شرارات صغيرة من نقطة معيّنة */
+  function sparks(x, y, colors = ["#3fe0b5", "#8f7bff", "#4c9dff"]) {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    for (let i = 0; i < 18; i++) {
+      const s = document.createElement("i");
+      s.className = "spark";
+      const a = (Math.PI * 2 * i) / 18;
+      const d = 60 + Math.random() * 70;
+      s.style.left = x + "px";
+      s.style.top = y + "px";
+      s.style.background = colors[i % colors.length];
+      s.style.setProperty("--dx", Math.cos(a) * d + "px");
+      s.style.setProperty("--dy", Math.sin(a) * d + "px");
+      document.body.appendChild(s);
+      setTimeout(() => s.remove(), 800);
+    }
   }
 
   /* ===== المؤقت ===== */
@@ -131,6 +177,7 @@ WB.UI = (() => {
       el.classList.toggle("warn", sec <= 15 && sec > 5);
       el.classList.toggle("danger", sec <= 5 && ms > 0);
       el.classList.toggle("done", ms <= 0);
+      document.body.classList.toggle("hurry", sec <= 5 && ms > 0);
       if (sec !== lastSec) {
         $("#timerNum").textContent = toArabicDigits(sec);
         if (lastSec !== null && sec > 0 && sec <= 10 && WB.Store.settings.ticks) {
@@ -151,7 +198,7 @@ WB.UI = (() => {
       endsAt = end; total = totalMs; onEnd = cb; lastSec = null; ended = false;
       paint();
     }
-    function stop() { if (raf) cancelAnimationFrame(raf); raf = null; }
+    function stop() { if (raf) cancelAnimationFrame(raf); raf = null; document.body.classList.remove("hurry"); }
     // عند الرجوع للتبويب نحدّث فوراً (requestAnimationFrame يتوقف بالخلفية)
     document.addEventListener("visibilitychange", () => { if (!document.hidden && raf) { cancelAnimationFrame(raf); paint(); } });
     // احتياط إذا كان التبويب بالخلفية: فحص كل ثانية
@@ -165,7 +212,7 @@ WB.UI = (() => {
     $("#playWatcher").hidden = !!v.word;
     $("#timeupMsg").hidden = !s.timeUp;
     if (v.word) {
-      fillWord($("#playCard"), $("#playCat"), $("#playWord"), v.word);
+      fillWord($("#playCard"), $("#playCat"), $("#playWord"), v.word, false);
       $$(".verdict .btn").forEach((b) => (b.disabled = false));
     } else {
       const ex = WB.Engine.explainer(s);
@@ -200,6 +247,15 @@ WB.UI = (() => {
       ${v.canNext
         ? `<button class="btn btn-primary btn-xl" data-action="next">الدور الجاي</button>`
         : `<p class="muted center">${esc(v.waitText || "")} <span class="dots"><i></i><i></i><i></i></span></p>`}`;
+    // العدّاد يرتفع قدام اللاعبين
+    if (r.got) {
+      const num = $(`#resultView .score-card.${teamClass(r.team)} .sc-num`);
+      if (num) {
+        num.textContent = s.teams[r.team].score - 1;
+        num.classList.remove("bump");
+        setTimeout(() => { num.textContent = s.teams[r.team].score; num.classList.add("bump"); }, 450);
+      }
+    }
   }
 
   function renderWin(v) {
@@ -263,6 +319,6 @@ WB.UI = (() => {
     show, current: () => current, previous: () => previous,
     updateBar, renderSteppers, renderCategoryChips, syncSettingsScreen,
     renderTurn, renderReveal, renderPlay, renderResult, renderWin, scoreboardHTML,
-    Timer, confirm, toast
+    Timer, confirm, toast, sparks
   };
 })();

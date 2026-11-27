@@ -11,6 +11,7 @@ WB.App = (() => {
 
   function goHome() {
     UI.Timer.stop();
+    delete document.body.dataset.team;
     refreshHome();
     UI.show("home");
   }
@@ -33,6 +34,60 @@ WB.App = (() => {
       Local.openSetup();
     } else {
       goHome();
+    }
+  }
+
+  /** حركة الكرت قبل تسجيل النتيجة: يطير لفوق إذا جابوها، ويهتز إذا لا */
+  let judging = false;
+  function verdict(got) {
+    if (!ctrl || judging) return;
+    judging = true;
+    UI.$$(".verdict .btn").forEach((b) => (b.disabled = true));
+    const card = UI.$("#playCard");
+    card.classList.add("shown", got ? "fly" : "shake");
+    if (got) {
+      const r = card.getBoundingClientRect();
+      UI.sparks(r.left + r.width / 2, r.top + r.height / 2);
+    }
+    setTimeout(() => {
+      judging = false;
+      ctrl && ctrl.verdict(got);
+    }, 480);
+  }
+
+  /* ===== دستة الكروت في شاشة البداية ===== */
+  function bindDeck() {
+    const deck = UI.$("#deck");
+    const catEl = UI.$("#deckCat");
+    let i = 0;
+    deck.addEventListener("click", () => {
+      if (deck.classList.contains("dealing")) return;
+      deck.classList.add("dealing");
+      Sound.play("reveal");
+      Sound.vibrate(20);
+      setTimeout(() => {
+        i = (i + 1) % WB.CATEGORIES.length;
+        catEl.textContent = WB.CATEGORIES[i].name;
+        const top = deck.querySelector(".dc-1");
+        top.style.transition = "none";
+        deck.classList.remove("dealing");
+        void top.offsetWidth;
+        top.style.transition = "";
+      }, 420);
+    });
+    // ميلان الدستة والرسومات مع حركة المؤشر (للكمبيوتر)
+    if (window.matchMedia("(hover: hover) and (prefers-reduced-motion: no-preference)").matches) {
+      const doodles = UI.$(".doodles");
+      window.addEventListener("pointermove", (e) => {
+        const nx = e.clientX / window.innerWidth - 0.5;
+        const ny = e.clientY / window.innerHeight - 0.5;
+        doodles.style.setProperty("--px", `${nx * -18}px`);
+        doodles.style.setProperty("--py", `${ny * -18}px`);
+        if (UI.current() === "home") {
+          deck.style.setProperty("--rx", `${nx * 18}deg`);
+          deck.style.setProperty("--ry", `${ny * -14}deg`);
+        }
+      });
     }
   }
 
@@ -66,8 +121,8 @@ WB.App = (() => {
     "quit-now": () => quit(true),
     "ready": () => ctrl && ctrl.ready(),
     "start-timer": () => ctrl && ctrl.startTimer(),
-    "got": () => ctrl && ctrl.verdict(true),
-    "miss": () => ctrl && ctrl.verdict(false),
+    "got": () => verdict(true),
+    "miss": () => verdict(false),
     "next": () => ctrl && ctrl.next(),
     "rematch": () => ctrl && ctrl.rematch(),
     "skip-turn": async () => {
@@ -177,6 +232,7 @@ WB.App = (() => {
 
   async function init() {
     bind();
+    bindDeck();
     refreshHome();
     UI.show("home");
     // الرجوع تلقائياً للغرفة بعد تحديث الصفحة
