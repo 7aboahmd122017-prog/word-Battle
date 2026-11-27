@@ -67,7 +67,7 @@
           <button type="button" class="deck" id="deck" aria-label="اقلب كرت من الدّستة">
             <span class="deck-card dc-3"></span>
             <span class="deck-card dc-2"></span>
-            <span class="deck-card dc-1"><b id="deckCat">أكل ومشروبات</b><i>؟</i></span>
+            <span class="deck-card dc-1"><i>؟</i></span>
           </button>
           <p class="home-tag">اشرح بدون ما تقولها… وخلّ فريقك يجيبها قبل لا يخلص الوقت.</p>
           <div class="home-actions">
@@ -120,10 +120,6 @@
           <div class="panel-row">
             <label for="setupTarget">نقاط الفوز</label>
             <div class="stepper" data-stepper="target"></div>
-          </div>
-          <div class="panel-block">
-            <span class="label">الفئات</span>
-            <div class="chips" data-categories="setup"></div>
           </div>
         </div>
         <p class="form-error" id="setupError" role="alert"></p>
@@ -199,8 +195,8 @@
               </div>
             </div>
           </div>
-          <p class="muted center">لا تقولها ولا تقول جزء منها. اضغط الكرت إذا تبي تخفيها.</p>
-          <button class="btn btn-primary btn-xl" data-action="start-timer"><svg><use href="#i-play"/></svg>ابدأ الوقت</button>
+          <p class="muted center" id="revealHint">اضغط على الكرت عشان تقلبه وتشوف كلمتك.</p>
+          <button class="btn btn-primary btn-xl" data-action="start-timer" disabled><svg><use href="#i-play"/></svg>ابدأ الوقت</button>
         </div>
       </section>
 
@@ -224,6 +220,7 @@
                 </div>
               </div>
             </div>
+            <p class="swipe-hint">اسحب الكرت لفوق إذا جابوها، ولتحت إذا ما جابوها</p>
             <p class="timeup-msg" id="timeupMsg" hidden>خلص الوقت! جابوها ولا لا؟</p>
             <div class="verdict">
               <button class="btn btn-got" data-action="got"><svg><use href="#i-check"/></svg>جابوها</button>

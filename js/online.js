@@ -328,16 +328,12 @@ WB.Online = (() => {
     if (isHost()) {
       panel.innerHTML = `
         <div class="panel-row"><label>وقت الجولة</label><div class="stepper" data-stepper="roundTime"></div></div>
-        <div class="panel-row"><label>نقاط الفوز</label><div class="stepper" data-stepper="target"></div></div>
-        <div class="panel-block"><span class="label">الفئات</span><div class="chips" data-categories="lobby"></div></div>`;
+        <div class="panel-row"><label>نقاط الفوز</label><div class="stepper" data-stepper="target"></div></div>`;
       UI.renderSteppers(panel);
-      UI.renderCategoryChips(panel);
     } else {
       panel.innerHTML = `
         <div class="panel-row"><span>وقت الجولة</span><b>${s.roundTime} ثانية</b></div>
-        <div class="panel-row"><span>نقاط الفوز</span><b>${s.target} نقاط</b></div>
-        <div class="panel-block"><span class="label">الفئات</span><div class="chips" data-categories="lobby"></div></div>`;
-      UI.renderCategoryChips(panel, { disabled: true, values: s.categories });
+        <div class="panel-row"><span>نقاط الفوز</span><b>${s.target} نقاط</b></div>`;
     }
     UI.$("#lobbyStart").hidden = !isHost();
     UI.$("#lobbyWait").hidden = isHost();

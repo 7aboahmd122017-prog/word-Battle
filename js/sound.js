@@ -54,6 +54,8 @@ WB.Sound = (() => {
 
   function vibrate(pattern) {
     if (!WB.Store.settings.vibrate) return;
+    // المتصفح يمنع الاهتزاز قبل أول لمسة من المستخدم
+    if (navigator.userActivation && !navigator.userActivation.hasBeenActive) return;
     try { navigator.vibrate && navigator.vibrate(pattern); } catch { /* تجاهل */ }
   }
 

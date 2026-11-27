@@ -55,10 +55,49 @@ WB.App = (() => {
     }, 480);
   }
 
+  /* ===== سحب كرت الكلمة: لفوق جابوها، لتحت ما جابوها ===== */
+  function bindSwipe() {
+    const card = UI.$("#playCard");
+    const LIMIT = 90;
+    let start = null;
+
+    card.addEventListener("pointerdown", (e) => {
+      if (judging || UI.$("#playExplainer").hidden) return;
+      start = { x: e.clientX, y: e.clientY, moved: false };
+      card.setPointerCapture(e.pointerId);
+      card.classList.add("dragging");
+    });
+    card.addEventListener("pointermove", (e) => {
+      if (!start) return;
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      if (Math.abs(dx) + Math.abs(dy) > 8) start.moved = true;
+      card.style.transform = `translate(${dx * 0.25}px, ${dy}px) rotate(${dx / 25}deg)`;
+      card.classList.toggle("swipe-up", dy < -LIMIT / 2);
+      card.classList.toggle("swipe-down", dy > LIMIT / 2);
+    });
+    const end = (e) => {
+      if (!start) return;
+      const dy = e.clientY - start.y;
+      const moved = start.moved;
+      start = null;
+      card.classList.remove("dragging");
+      if (moved) card.dataset.dragged = "1"; // لا نقلب الكرت بعد السحب
+      if (dy < -LIMIT) { verdict(true); return; }
+      if (dy > LIMIT) { verdict(false); return; }
+      card.classList.remove("swipe-up", "swipe-down");
+      card.style.transition = "transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1)";
+      card.style.transform = "";
+      setTimeout(() => { card.style.transition = ""; }, 380);
+    };
+    card.addEventListener("pointerup", end);
+    card.addEventListener("pointercancel", end);
+  }
+
   /* ===== دستة الكروت في شاشة البداية ===== */
   function bindDeck() {
     const deck = UI.$("#deck");
-    const catEl = UI.$("#deckCat");
+    const tints = ["var(--mint)", "var(--violet)", "var(--blue)"];
     let i = 0;
     deck.addEventListener("click", () => {
       if (deck.classList.contains("dealing")) return;
@@ -66,9 +105,9 @@ WB.App = (() => {
       Sound.play("reveal");
       Sound.vibrate(20);
       setTimeout(() => {
-        i = (i + 1) % WB.CATEGORIES.length;
-        catEl.textContent = WB.CATEGORIES[i].name;
+        i = (i + 1) % tints.length;
         const top = deck.querySelector(".dc-1");
+        top.querySelector("i").style.color = tints[i];
         top.style.transition = "none";
         deck.classList.remove("dealing");
         void top.offsetWidth;
@@ -233,6 +272,7 @@ WB.App = (() => {
   async function init() {
     bind();
     bindDeck();
+    bindSwipe();
     refreshHome();
     UI.show("home");
     // الرجوع تلقائياً للغرفة بعد تحديث الصفحة

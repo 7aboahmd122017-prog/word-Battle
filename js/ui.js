@@ -102,6 +102,57 @@ WB.UI = (() => {
         ${v.canSkip ? `<button class="btn btn-ghost" data-action="skip-turn">${icon("shuffle")}تخطي واختيار شارح ثاني</button>` : ""}`;
     }
     $("#turnView").innerHTML = html;
+    rollExplainer(s, team, name);
+  }
+
+  /* روليت اختيار الشارح: الأسماء تلف وتوقف على اللي عليه الدور */
+  let rollTimer = null;
+  let lastRoll = "";
+  function rollExplainer(s, team, finalName) {
+    clearTimeout(rollTimer);
+    const key = `${s.gameId || ""}:${s.round}:${s.explainerId}`;
+    const names = team.players.filter((p) => !p.off).map((p) => p.name);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (key === lastRoll || names.length < 2 || reduced) return;
+    lastRoll = key;
+
+    const who = $("#turnView .who");
+    const avatar = $("#turnView .handoff-avatar");
+    const btn = $('#turnView [data-action="ready"]');
+    if (!who || !avatar) return;
+    if (btn) btn.disabled = true;
+    who.setAttribute("aria-live", "polite");
+    who.setAttribute("aria-busy", "true");
+    who.classList.add("rolling");
+    avatar.classList.add("rolling");
+
+    // سرعة تتباطأ تدريجياً مثل العجلة
+    const delays = [60, 60, 70, 70, 80, 90, 105, 120, 140, 165, 195, 230];
+    let prev = "";
+    let step = 0;
+    const tick = () => {
+      if (step < delays.length) {
+        let n;
+        do { n = names[Math.floor(Math.random() * names.length)]; } while (n === prev && names.length > 1);
+        prev = n;
+        who.textContent = n;
+        avatar.textContent = initial(n);
+        WB.Sound.play("tick");
+        rollTimer = setTimeout(tick, delays[step++]);
+      } else {
+        who.textContent = finalName;
+        avatar.textContent = initial(finalName);
+        who.classList.remove("rolling");
+        who.setAttribute("aria-busy", "false");
+        avatar.classList.remove("rolling");
+        who.classList.add("landed");
+        avatar.classList.add("landed");
+        WB.Sound.play("reveal");
+        WB.Sound.vibrate(50);
+        if (btn) btn.disabled = false;
+      }
+    };
+    tick();
   }
 
   /* ===== عرض الكلمة ===== */
@@ -111,7 +162,10 @@ WB.UI = (() => {
     catEl.textContent = word.catName;
     wordEl.textContent = word.text;
     wordEl.classList.toggle("long", word.text.length > 12);
-    card.classList.remove("fly", "shake");
+    card.classList.remove("fly", "shake", "swipe-up", "swipe-down", "dragging", "nudge");
+    card.style.transform = "";
+    card.style.transition = "";
+    delete card.dataset.dragged;
     clearTimeout(flipTimer);
     if (animate) {
       card.classList.remove("shown");
@@ -124,14 +178,32 @@ WB.UI = (() => {
       inner.style.transition = "";
     }
   }
+  /** الكلمة توصل مقلوبة، والشارح يقلبها بنفسه. زر الوقت يتفعّل بعد ما يشوفها */
   function renderReveal(word) {
-    fillWord($("#revealCard"), $("#revealCat"), $("#revealWord"), word, true);
+    const card = $("#revealCard");
+    fillWord(card, $("#revealCat"), $("#revealWord"), word, false);
+    const inner = card.querySelector(".flip-inner");
+    inner.style.transition = "none";
+    card.classList.remove("shown");
+    void inner.offsetWidth;
+    inner.style.transition = "";
+    card.classList.add("nudge");
+    card.setAttribute("aria-pressed", "false");
+    $('[data-action="start-timer"]').disabled = true;
+    $("#revealHint").textContent = "اضغط على الكرت عشان تقلبه وتشوف كلمتك.";
   }
 
-  // الضغط على الكرت يخفي الكلمة أو يظهرها
+  // الضغط على الكرت يقلبه (يظهر الكلمة أو يخفيها)
   function toggleFlip(card) {
+    if (card.dataset.dragged) { delete card.dataset.dragged; return; }
     card.classList.toggle("shown");
-    WB.Sound.play("tap");
+    card.setAttribute("aria-pressed", card.classList.contains("shown"));
+    card.classList.remove("nudge");
+    WB.Sound.play(card.classList.contains("shown") ? "reveal" : "tap");
+    if (card.id === "revealCard" && card.classList.contains("shown")) {
+      $('[data-action="start-timer"]').disabled = false;
+      $("#revealHint").textContent = "لا تقولها ولا تقول جزء منها. اضغط الكرت إذا تبي تخفيها.";
+    }
   }
   document.addEventListener("click", (e) => {
     const card = e.target.closest(".flip");

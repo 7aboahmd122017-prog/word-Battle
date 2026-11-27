@@ -12,7 +12,7 @@
   --line-2: rgba(255, 255, 255, 0.12);
   --text: #eef0f7;
   --muted: #8f95ab;
-  --muted-2: #6a7088;
+  --muted-2: #868ca4;
 
   --violet: #8f7bff;
   --violet-deep: #6a55f0;
@@ -613,6 +613,29 @@ body.hurry::before { animation: hurry 1s ease-in-out infinite; }
 }
 .turn .who { font-size: 2.4rem; }
 .win h1 { font-size: clamp(2.2rem, 10vw, 3.2rem); }
+
+/* الكرت المقلوب يتمايل شوي يدعو للضغط */
+.flip.nudge .flip-inner { animation: nudge 2.2s ease-in-out 0.6s infinite; }
+@keyframes nudge {
+  0%, 70%, 100% { transform: none; }
+  78% { transform: rotate(-3deg) translateY(-6px); }
+  86% { transform: rotate(3deg) translateY(-6px); }
+  94% { transform: rotate(-1deg); }
+}
+
+/* روليت اختيار الشارح */
+.who.rolling { opacity: 0.75; filter: blur(0.4px); }
+.handoff-avatar.rolling { animation: none; transform: rotate(-4deg) scale(0.96); }
+.who.landed { animation: land 0.55s cubic-bezier(0.3, 1.6, 0.5, 1); }
+.handoff-avatar.landed { animation: land 0.55s cubic-bezier(0.3, 1.6, 0.5, 1), breathe 2.6s ease-in-out 0.6s infinite; }
+@keyframes land { 0% { transform: scale(0.7); } 60% { transform: scale(1.15); } 100% { transform: none; } }
+
+/* سحب الكرت لتسجيل النتيجة */
+.flip-sm { touch-action: none; }
+.flip-sm.dragging .flip-inner { transition: none; }
+.flip-sm.swipe-up .word-card { border-color: var(--mint); box-shadow: 0 0 0 2px rgba(63,224,181,0.5), 0 20px 50px -20px rgba(63,224,181,0.6); }
+.flip-sm.swipe-down .word-card { border-color: var(--danger); box-shadow: 0 0 0 2px rgba(255,107,122,0.45), 0 20px 50px -20px rgba(255,107,122,0.5); }
+.swipe-hint { text-align: center; color: var(--muted-2); font-size: 0.82rem; margin-top: 10px; }
 
 /* ضغطة الأزرار: ارتداد خفيف */
 .btn-primary:active, .btn-got:active { transform: scale(0.95) translateY(1px); }

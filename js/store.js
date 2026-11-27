@@ -39,13 +39,9 @@ WB.Store = (() => {
   }
 
   const settings = Object.assign({}, DEFAULT_SETTINGS, read(SETTINGS_KEY, {}));
-  const validCats = new Set(WB.CATEGORIES.map((c) => c.id));
-  settings.categories = (settings.categories || []).filter((c) => validCats.has(c));
-  if (!settings.categories.length) settings.categories = DEFAULT_SETTINGS.categories.slice();
-  // الفئات الجديدة اللي تنضاف لبنك الكلمات تتفعّل تلقائياً
-  const known = new Set(settings.knownCats || settings.categories);
-  WB.CATEGORIES.forEach((c) => { if (!known.has(c.id) && !settings.categories.includes(c.id)) settings.categories.push(c.id); });
-  settings.knownCats = WB.CATEGORIES.map((c) => c.id);
+  // كل الفئات دايم مفعّلة: الكلمة مفاجأة وما أحد يدري وش بيطلع له
+  settings.categories = DEFAULT_SETTINGS.categories.slice();
+  delete settings.knownCats;
   write(SETTINGS_KEY, settings);
 
   const listeners = new Set();

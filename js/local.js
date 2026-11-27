@@ -76,7 +76,6 @@ WB.Local = (() => {
         <button type="button" class="btn btn-ghost btn-sm" data-add-player="${ti}">${UI.icon("plus")}إضافة لاعب</button>
       </div>`).join("");
     UI.renderSteppers(UI.$('[data-screen="setup"]'));
-    UI.renderCategoryChips(UI.$('[data-screen="setup"]'));
     UI.$("#setupError").textContent = "";
     if (focus) {
       const el = root.querySelector(`[data-player="${focus}"]`);
