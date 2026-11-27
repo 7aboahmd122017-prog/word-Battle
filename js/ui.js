@@ -156,9 +156,18 @@ WB.UI = (() => {
   }
 
   /* ===== عرض الكلمة ===== */
-  let flipTimer = null;
-  /** يعبّي الكرت. animate: يبدأ مقلوب ثم ينقلب ليكشف الكلمة */
-  function fillWord(card, catEl, wordEl, word, animate) {
+  /** يقلب الكرت فوراً بدون حركة (مكشوف أو مخفي) */
+  function setFlip(card, shown) {
+    const inner = card.querySelector(".flip-inner");
+    inner.style.transition = "none";
+    card.classList.toggle("shown", shown);
+    card.setAttribute("aria-pressed", String(shown));
+    void inner.offsetWidth;
+    inner.style.transition = "";
+  }
+
+  /** يعبّي الكرت بالكلمة. الكرت يبدأ دايماً مخفي إلا إذا طُلب غير كذا */
+  function fillWord(card, catEl, wordEl, word, shown = false) {
     catEl.textContent = word.catName;
     wordEl.textContent = word.text;
     wordEl.classList.toggle("long", word.text.length > 12);
@@ -166,29 +175,18 @@ WB.UI = (() => {
     card.style.transform = "";
     card.style.transition = "";
     delete card.dataset.dragged;
-    clearTimeout(flipTimer);
-    if (animate) {
-      card.classList.remove("shown");
-      flipTimer = setTimeout(() => card.classList.add("shown"), 380);
-    } else {
-      const inner = card.querySelector(".flip-inner");
-      inner.style.transition = "none";
-      card.classList.add("shown");
-      void inner.offsetWidth;
-      inner.style.transition = "";
-    }
+    setFlip(card, shown);
   }
+
+  // حالة كرت اللعب لكل دور: يبدأ مخفي عند بداية الوقت، ويحافظ على اختيار الشارح
+  // لو انعادت الشاشة (رجوع من الإعدادات أو تحديث الصفحة)
+  let playCard = { key: "", shown: false };
+
   /** الكلمة توصل مقلوبة، والشارح يقلبها بنفسه. زر الوقت يتفعّل بعد ما يشوفها */
   function renderReveal(word) {
     const card = $("#revealCard");
     fillWord(card, $("#revealCat"), $("#revealWord"), word, false);
-    const inner = card.querySelector(".flip-inner");
-    inner.style.transition = "none";
-    card.classList.remove("shown");
-    void inner.offsetWidth;
-    inner.style.transition = "";
     card.classList.add("nudge");
-    card.setAttribute("aria-pressed", "false");
     $('[data-action="start-timer"]').disabled = true;
     $("#revealHint").textContent = "اضغط على الكرت عشان تقلبه وتشوف كلمتك.";
   }
@@ -197,9 +195,11 @@ WB.UI = (() => {
   function toggleFlip(card) {
     if (card.dataset.dragged) { delete card.dataset.dragged; return; }
     card.classList.toggle("shown");
-    card.setAttribute("aria-pressed", card.classList.contains("shown"));
+    const shown = card.classList.contains("shown");
+    card.setAttribute("aria-pressed", String(shown));
     card.classList.remove("nudge");
-    WB.Sound.play(card.classList.contains("shown") ? "reveal" : "tap");
+    if (card.id === "playCard") playCard.shown = shown;
+    WB.Sound.play(shown ? "reveal" : "tap");
     if (card.id === "revealCard" && card.classList.contains("shown")) {
       $('[data-action="start-timer"]').disabled = false;
       $("#revealHint").textContent = "لا تقولها ولا تقول جزء منها. اضغط الكرت إذا تبي تخفيها.";
@@ -284,7 +284,10 @@ WB.UI = (() => {
     $("#playWatcher").hidden = !!v.word;
     $("#timeupMsg").hidden = !s.timeUp;
     if (v.word) {
-      fillWord($("#playCard"), $("#playCat"), $("#playWord"), v.word, false);
+      // دور جديد = كرت مخفي. نفس الدور = نرجّع الكرت مثل ما تركه الشارح
+      const key = `${s.gameId || ""}:${s.round}:${v.word.id}`;
+      if (playCard.key !== key) playCard = { key, shown: false };
+      fillWord($("#playCard"), $("#playCat"), $("#playWord"), v.word, playCard.shown);
       $$(".verdict .btn").forEach((b) => (b.disabled = false));
     } else {
       const ex = WB.Engine.explainer(s);
