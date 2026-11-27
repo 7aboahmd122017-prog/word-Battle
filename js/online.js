@@ -364,7 +364,7 @@ WB.Online = (() => {
     const n = UI.$("#onlineNotice");
     if (!Transport.configured()) {
       n.hidden = false;
-      n.innerHTML = `وضع التجربة: ما تم ربط Supabase بعد، فاللعب الجماعي يشتغل حالياً بين تبويبات نفس المتصفح فقط. لتفعيله بين الجوالات حط بيانات مشروعك في <code>js/config.js</code>.`;
+      n.textContent = "اللعب من أكثر من جوال لسا ما تفعّل. حالياً تقدر تجربه بين تبويبات نفس المتصفح بس، وللعب مع الشلة استخدم «جهاز واحد».";
     } else n.hidden = true;
     const saved = Store.read("wb.onlineName", "");
     if (saved && !UI.$("#onName").value) UI.$("#onName").value = saved;
@@ -409,7 +409,9 @@ WB.Online = (() => {
         if (st) return;
         resetLocal();
         sSet(ROOM_KEY, null);
-        showEntry("ما لقينا غرفة بهالرمز، أو المضيف مو متصل. تأكد من الرمز وجرب مرة ثانية.");
+        showEntry(Transport.configured()
+          ? "ما لقينا غرفة بهالرمز، أو المضيف مو متصل. تأكد من الرمز وجرب مرة ثانية."
+          : "ما نقدر ندخل غرفة من جهاز ثاني للحين: اللعب بين الجوالات يحتاج ربط Supabase أول. حالياً يشتغل بين تبويبات نفس المتصفح بس.");
       }, 7000);
     }
   }

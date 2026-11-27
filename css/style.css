@@ -363,6 +363,11 @@ input[type="range"] { width: 46%; accent-color: var(--violet); }
   text-align: center; letter-spacing: 0.4em; font-family: var(--font-display) !important; font-weight: 600;
   text-transform: uppercase; direction: ltr; font-size: 1.15rem !important;
 }
+/* التباعد للرمز نفسه بس، عشان ما يقطّع الحروف العربية في النص الإرشادي */
+.code-input::placeholder {
+  letter-spacing: normal; text-transform: none;
+  font-family: var(--font); font-weight: 500; font-size: 1rem;
+}
 .room-code { display: grid; justify-items: center; gap: 6px; padding: 12px 0 4px; }
 .code-big {
   display: inline-flex; align-items: center; gap: 12px; direction: ltr;
