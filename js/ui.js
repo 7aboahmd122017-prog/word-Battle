@@ -95,7 +95,7 @@ WB.UI = (() => {
         <div class="handoff-avatar ${teamClass(ti)}">${esc(initial(name))}</div>
         <div>
           <p class="who">${esc(name)}</p>
-          <p class="muted">${reading ? "يقرأ الكلمة الحين" : "يستلم الدور"} <span class="dots"><i></i><i></i><i></i></span></p>
+          <p class="muted">${reading ? "الكلمة عند الشارح الحين" : "صار الشارح بهالدور"} <span class="dots"><i></i><i></i><i></i></span></p>
         </div>
         <p class="hint">${v.myTeam === ti ? "جهّز نفسك، أنت من فريقه وبتخمّن!" : v.myTeam === 1 - ti ? "فريقك يتفرج هالدور. ركّز وانتبه لا يقول الكلمة!" : ""}</p>
         ${v.offlineNote ? `<p class="banner">${esc(v.offlineNote)}</p>` : ""}
@@ -291,7 +291,7 @@ WB.UI = (() => {
       $$(".verdict .btn").forEach((b) => (b.disabled = false));
     } else {
       const ex = WB.Engine.explainer(s);
-      $("#watchTitle").textContent = `${ex ? ex.name : "الشارح"} يشرح الحين`;
+      $("#watchTitle").textContent = `${ex ? ex.name : "الشارح"} على الشرح الحين`;
       $("#watchSub").textContent = v.myTeam === s.turnTeam ? "خمّن بصوت عالي! الكلمة عند الشارح بس." : `دور فريق ${s.teams[s.turnTeam].name}. انتظر دورك.`;
     }
   }

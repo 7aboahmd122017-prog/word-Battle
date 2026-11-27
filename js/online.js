@@ -137,6 +137,7 @@ WB.Online = (() => {
       if (!s) return;
       if (st && st.hostId === s.hostId && (s.rev || 0) < (st.rev || 0)) return;
       clearTimeout(joinTimer); clearInterval(helloTimer); joinTimer = helloTimer = null;
+      UI.$("#onlineError").textContent = "";
       st = s;
       localEndsAt = remaining != null ? Date.now() + remaining : null;
     } else {

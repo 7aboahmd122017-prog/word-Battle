@@ -5,7 +5,7 @@
 window.WB = window.WB || {};
 
 WB.Transport = (() => {
-  const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js";
+  const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.100.0/dist/umd/supabase.min.js";
   const configured = () => !!(WB.CONFIG && WB.CONFIG.SUPABASE_URL && WB.CONFIG.SUPABASE_ANON_KEY);
 
   let libPromise = null;

@@ -6,6 +6,7 @@
    إذا تركتها فاضية، يشتغل "وضع التجربة" بين تبويبات نفس المتصفح فقط. */
 window.WB = window.WB || {};
 WB.CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
+  SUPABASE_URL: "https://ksrlyidjcwidfpmonsin.supabase.co",
+  // مفتاح عام (publishable): آمن يكون في الموقع. لا تحط هنا المفتاح السري أبداً.
+  SUPABASE_ANON_KEY: "sb_publishable_Fdpnfe85wluGLqYWQ0gReA_jdC6TBer"
 };
