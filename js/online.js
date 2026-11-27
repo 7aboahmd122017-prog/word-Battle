@@ -286,6 +286,12 @@ WB.Online = (() => {
     UI.$("#onlineLobby").hidden = false;
     UI.$("#onlineTitle").textContent = "غرفة الانتظار";
     UI.$("#roomCode").textContent = code;
+    // نرسم QR الغرفة مرة وحدة لكل غرفة (مو مع كل تحديث للوبي)
+    const qrEl = UI.$("#roomQR");
+    if (qrEl.dataset.code !== code) {
+      qrEl.dataset.code = code;
+      WB.Share.renderQR(qrEl, WB.Share.roomUrl(code), `رمز QR لدخول الغرفة ${code}`);
+    }
 
     // نحافظ على مكان الكتابة إذا كان المضيف يعدّل اسم فريق
     const ae = document.activeElement;
@@ -449,6 +455,16 @@ WB.Online = (() => {
     },
 
     canRejoin: () => !!sGet(ROOM_KEY),
+    rejoinCode: () => (sGet(ROOM_KEY) || {}).code || "",
+
+    /** فتح شاشة الدخول والرمز معبّى (من رابط أو QR) */
+    openWithCode(c) {
+      showEntry();
+      UI.$("#onCode").value = c;
+      const name = UI.$("#onName");
+      if (!name.value.trim()) name.focus();
+      UI.toast("عبّينا لك رمز الغرفة، اكتب اسمك واضغط دخول");
+    },
     async rejoin() {
       const r = sGet(ROOM_KEY);
       if (!r) return false;

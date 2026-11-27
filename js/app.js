@@ -180,6 +180,13 @@ WB.App = (() => {
       ctrl = null;
       UI.show("mode");
     },
+    "open-share": () => openShare(),
+    "close-share": () => closeShare(),
+    "share-site": () => shareLink(WB.Share.siteUrl(), "تعالوا نلعب «وِش الكلمة؟»"),
+    "share-room": () => {
+      const code = Online.code();
+      if (code) shareLink(WB.Share.roomUrl(code), `ادخل غرفتي في «وِش الكلمة؟»، الرمز: ${code}`);
+    },
     "copy-code": async () => {
       const code = Online.code();
       if (!code) return;
@@ -266,7 +273,12 @@ WB.App = (() => {
     });
 
     UI.$("#modal").addEventListener("click", (e) => { if (e.target.id === "modal") UI.$("#modalCancel").click(); });
-    document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !UI.$("#modal").hidden) UI.$("#modalCancel").click(); });
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (!UI.$("#modal").hidden) UI.$("#modalCancel").click();
+      else if (!UI.$("#shareModal").hidden) closeShare();
+    });
+    UI.$("#shareModal").addEventListener("click", (e) => { if (e.target.id === "shareModal") closeShare(); });
   }
 
   async function init() {
@@ -275,11 +287,32 @@ WB.App = (() => {
     bindSwipe();
     refreshHome();
     UI.show("home");
+    const linkRoom = WB.Share.takeRoomFromUrl();
     // الرجوع تلقائياً للغرفة بعد تحديث الصفحة
-    if (Online.canRejoin()) {
+    if (Online.canRejoin() && (!linkRoom || Online.rejoinCode() === linkRoom)) {
       ctrl = Online;
       await Online.rejoin();
+    } else if (linkRoom) {
+      // فتح اللعبة من QR أو رابط غرفة: شاشة الدخول والرمز جاهز
+      ctrl = Online;
+      Online.openWithCode(linkRoom);
     }
+  }
+
+  /* ===== نافذة مشاركة اللعبة ===== */
+  function openShare() {
+    const m = UI.$("#shareModal");
+    m.hidden = false;
+    const qr = UI.$("#siteQR");
+    if (!qr.querySelector("svg")) WB.Share.renderQR(qr, WB.Share.siteUrl(), "رمز QR لفتح اللعبة");
+    UI.$('[data-action="share-site"]').focus();
+  }
+  function closeShare() { UI.$("#shareModal").hidden = true; }
+
+  async function shareLink(url, text) {
+    const r = await WB.Share.share(url, text);
+    if (r === "copied") UI.toast("نسخنا الرابط، الصقه للشلة");
+    else if (r === "failed") UI.toast(url);
   }
 
   document.addEventListener("DOMContentLoaded", init);
