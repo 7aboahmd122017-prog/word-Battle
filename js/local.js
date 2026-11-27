@@ -86,6 +86,7 @@ WB.Local = (() => {
       </div>`).join("");
     UI.renderSteppers(UI.$('[data-screen="setup"]'));
     UI.$("#setupError").textContent = "";
+    updateBalance();
     if (focus) {
       const el = root.querySelector(`[data-player="${focus}"]`);
       if (el) el.focus();
@@ -96,6 +97,31 @@ WB.Local = (() => {
     UI.$$("#setupTeams .team-card").forEach((card, ti) => {
       card.querySelector(".team-count").textContent = `${setup.teams[ti].players.filter((p) => p.trim()).length} لاعبين`;
     });
+    updateBalance();
+  }
+
+  /** تنبيه إذا الفرق مو متوازنة: الدور يتبادل بين الفريقين، فالفريق الأصغر يشرح لاعبينه أكثر */
+  function updateBalance() {
+    const n = setup.teams.map((t) => t.players.filter((p) => p.trim()).length);
+    const hint = UI.$("#balanceHint");
+    const diff = Math.abs(n[0] - n[1]);
+    hint.hidden = diff < 2;
+    if (diff >= 2) {
+      const small = n[0] < n[1] ? 0 : 1;
+      hint.textContent = `فريق ${setup.teams[small].name || "الثاني"} أقل بـ ${diff} لاعبين، فلاعبينه بيشرحون أكثر. وزّعوهم بالتساوي عشان الكل ياخذ حقه.`;
+    }
+  }
+
+  /** يخلط كل الأسماء ويقسمها على الفريقين بالتساوي */
+  function shuffleTeams() {
+    const names = WB.Engine.shuffle(setup.teams.flatMap((t) => t.players.map((p) => p.trim()).filter(Boolean)));
+    if (names.length < 2) { UI.toast("اكتبوا أسماء اللاعبين أول"); return; }
+    setup.teams[0].players = names.filter((_, i) => i % 2 === 0);
+    setup.teams[1].players = names.filter((_, i) => i % 2 === 1);
+    Store.saveSetup(setup);
+    renderSetup();
+    Sound.play("reveal");
+    UI.toast("توزّعت الفرق بالتساوي");
   }
 
   function bindSetup() {
@@ -154,6 +180,8 @@ WB.Local = (() => {
   /* ===== أوامر اللعب ===== */
   const ctrl = {
     kind: "local",
+
+    shuffleTeams,
 
     openSetup() {
       setup = Store.getSetup();

@@ -176,6 +176,8 @@ WB.App = (() => {
   const actions = {
     "go-home": goHome,
     "go-mode": () => UI.show("mode"),
+    "go-rules": () => UI.show("rules"),
+    "shuffle-teams": () => Local.shuffleTeams(),
     "go-setup": () => { ctrl = Local; Local.openSetup(); },
     "go-online": () => { ctrl = Online; Online.openEntry(); },
     "start-local": () => { ctrl = Local; Local.start(); },

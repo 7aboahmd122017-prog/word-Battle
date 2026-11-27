@@ -169,6 +169,12 @@ WB.UI = (() => {
   /** يعبّي الكرت بالكلمة. الكرت يبدأ دايماً مخفي إلا إذا طُلب غير كذا */
   function fillWord(card, catEl, wordEl, word, shown = false) {
     catEl.textContent = word.catName;
+    const lvl = card.querySelector(".word-level");
+    if (lvl) {
+      lvl.textContent = word.levelName || "";
+      lvl.dataset.level = word.level || "";
+      lvl.hidden = !word.levelName;
+    }
     wordEl.textContent = word.text;
     wordEl.classList.toggle("long", word.text.length > 12);
     card.classList.remove("fly", "shake", "swipe-up", "swipe-down", "dragging", "nudge");

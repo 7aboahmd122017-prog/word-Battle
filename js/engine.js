@@ -17,7 +17,7 @@ WB.Engine = (() => {
   /** teams: [{name, players:[{id,name}]}] */
   function create(teams, settings) {
     return {
-      teams: teams.map((t) => ({ name: t.name, players: t.players.slice(), score: 0, bag: [], last: null })),
+      teams: teams.map((t) => ({ name: t.name, players: t.players.slice(), score: 0, done: [], last: null })),
       settings: { roundTime: settings.roundTime, target: settings.target, categories: settings.categories.slice() },
       turnTeam: Math.random() < 0.5 ? 0 : 1,
       explainerId: null,
@@ -31,16 +31,21 @@ WB.Engine = (() => {
     };
   }
 
-  /** اختيار عشوائي بدون تكرار حتى يأخذ كل أعضاء الفريق دورهم */
+  /** اختيار عشوائي عادل: ما أحد يشرح مرتين قبل ما يشرح كل أعضاء فريقه.
+      team.done = اللي شرحوا في الدورة الحالية. اللي ينضم وسط الدورة يدخلها على طول،
+      واللي غير متصل يتخطّاه الدور لين يرجع. */
   function pickExplainer(team) {
-    const ids = team.players.filter((p) => !p.off).map((p) => p.id);
-    team.bag = team.bag.filter((id) => ids.includes(id));
-    if (!team.bag.length) {
-      team.bag = shuffle(ids);
-      // لا نعيد نفس آخر شارح في بداية دورة جديدة
-      if (team.bag.length > 1 && team.bag[0] === team.last) team.bag.push(team.bag.shift());
+    const active = team.players.filter((p) => !p.off).map((p) => p.id);
+    if (!active.length) return null;
+    team.done = (team.done || []).filter((id) => team.players.some((p) => p.id === id));
+    let waiting = active.filter((id) => !team.done.includes(id));
+    if (!waiting.length) {
+      // خلصت الدورة: نبدأ وحدة جديدة، وما نعيد نفس آخر شارح أول واحد
+      team.done = [];
+      waiting = active.length > 1 ? active.filter((id) => id !== team.last) : active;
     }
-    const id = team.bag.shift() || null;
+    const id = shuffle(waiting)[0];
+    team.done.push(id);
     team.last = id;
     return id;
   }
@@ -104,7 +109,7 @@ WB.Engine = (() => {
   }
 
   function rematch(s) {
-    s.teams.forEach((t) => { t.score = 0; t.bag = []; t.last = null; });
+    s.teams.forEach((t) => { t.score = 0; t.done = []; t.last = null; });
     s.winner = null;
     s.lastResult = null;
     s.round = 0;

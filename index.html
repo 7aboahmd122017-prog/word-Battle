@@ -27,6 +27,7 @@
     <symbol id="i-eye" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
     <symbol id="i-play" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5.5v13a1 1 0 0 0 1.5.86l10.4-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></symbol>
     <symbol id="i-home" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M4 10.5 12 4l8 6.5V20h-5.5v-5.5h-5V20H4v-9.5Z"/></symbol>
+    <symbol id="i-book" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 6.5c-2-1.5-4.8-2-8-1.5v13c3.2-.5 6 0 8 1.5m0-13c2-1.5 4.8-2 8-1.5v13c-3.2-.5-6 0-8 1.5m0-13v13"/></symbol>
     <symbol id="i-share" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M12 15V3.5M7.5 8 12 3.5 16.5 8M5 12.5V19a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-6.5"/></symbol>
     <symbol id="i-shuffle" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M3 7h3.5c2.5 0 3.8 1.2 5.5 5s3 5 5.5 5H21m0 0-3-3m3 3-3 3M3 17h3.5c1.3 0 2.2-.3 3-1M21 7h-3.5c-1.3 0-2.2.3-3 1M21 7l-3-3m3 3-3 3"/></symbol>
   </svg>
@@ -73,16 +74,80 @@
           <p class="home-tag">اشرح بدون ما تقولها… وخلّ فريقك يجيبها قبل لا يخلص الوقت.</p>
           <div class="home-actions">
             <button class="btn btn-primary btn-xl" data-action="go-mode">يلا نلعب</button>
+            <button class="btn btn-soft" data-action="go-rules"><svg><use href="#i-book"/></svg>طريقة اللعب</button>
             <div class="home-row">
               <button class="btn btn-ghost" data-action="open-share"><svg><use href="#i-share"/></svg>شارك اللعبة</button>
               <button class="btn btn-ghost" data-action="open-settings"><svg><use href="#i-gear"/></svg>الإعدادات</button>
             </div>
           </div>
-          <ol class="how">
-            <li><b>١</b><span>فريقين، وكل دور ينختار شارح عشوائي.</span></li>
-            <li><b>٢</b><span>الشارح يشوف الكلمة ويشرحها بدون ما يذكرها.</span></li>
-            <li><b>٣</b><span>جابوها؟ نقطة. والدور ينتقل للفريق الثاني.</span></li>
-          </ol>
+        </div>
+      </section>
+
+      <!-- طريقة اللعب -->
+      <section class="screen" data-screen="rules">
+        <div class="topline">
+          <button class="icon-btn" data-action="go-home" aria-label="رجوع"><svg><use href="#i-back"/></svg></button>
+          <h2>طريقة اللعب</h2>
+          <span class="spacer"></span>
+        </div>
+
+        <p class="rules-lead">فريقين يتنافسون. كل دور واحد يشرح كلمة سرية لفريقه بدون ما يقولها، وفريقه يحاول يجيبها قبل لا يخلص الوقت.</p>
+
+        <ol class="rules-steps">
+          <li>
+            <b>١</b>
+            <div><h3>جهّزوا الفرق</h3><p>اكتبوا أسماء الفريقين واللاعبين، لاعبين على الأقل لكل فريق. وحددوا وقت الجولة ونقاط الفوز.</p></div>
+          </li>
+          <li>
+            <b>٢</b>
+            <div><h3>اللعبة تختار الشارح</h3><p>الأسماء تلف وتوقف على واحد عشوائي، وما يتكرر لين يشرح كل فريقه. الشارح يستلم الجهاز ويضغط «أنا جاهز».</p></div>
+          </li>
+          <li>
+            <b>٣</b>
+            <div><h3>اقلب الكرت</h3><p>الكلمة توصل مقلوبة. اضغط الكرت تشوفها، ومعها الفئة ومستوى الصعوبة: سهل أو متوسط أو صعب.</p></div>
+          </li>
+          <li>
+            <b>٤</b>
+            <div><h3>ابدأ الوقت واشرح</h3><p>أول ما يبدأ الوقت يتخبى الكرت عن الحاضرين. إذا نسيت الكلمة اضغط الكرت تشوفها.</p></div>
+          </li>
+          <li>
+            <b>٥</b>
+            <div><h3>سجّلوا النتيجة</h3><p>جابوها؟ اضغط «جابوها» أو اسحب الكرت لفوق، ويحصل فريقك على نقطة. ما جابوها؟ اسحبه لتحت. وبعدها الدور ينتقل للفريق الثاني.</p></div>
+          </li>
+        </ol>
+
+        <div class="rules-split">
+          <div class="rules-box ok">
+            <h3><svg><use href="#i-check"/></svg>مسموح</h3>
+            <ul>
+              <li>تشرح بكلامك وتعطي أمثلة</li>
+              <li>تمثّل بيدك ووجهك</li>
+              <li>تقلّد أصوات</li>
+            </ul>
+          </div>
+          <div class="rules-box no">
+            <h3><svg><use href="#i-x"/></svg>ممنوع</h3>
+            <ul>
+              <li>تقول الكلمة أو جزء منها</li>
+              <li>تتهجّاها أو تترجمها</li>
+              <li>تأشر على الشي إذا قدامكم</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="rules-box win-rule">
+          <h3><svg><use href="#i-crown"/></svg>مين يفوز؟</h3>
+          <p>أول فريق يوصل نقاط الفوز اللي حددتوها. وتقدرون تغيّرون الوقت والنقاط من الإعدادات حتى وسط المباراة.</p>
+        </div>
+
+        <div class="rules-box">
+          <h3><svg><use href="#i-phones"/></svg>طريقتين للعب</h3>
+          <p><b>جهاز واحد:</b> تتجمعون حول جوال واحد ويتنقّل بين الشارحين.</p>
+          <p><b>كل واحد من جواله:</b> واحد يسوي غرفة ويشارك الرمز أو الـ QR، والكلمة تطلع على جوال الشارح بس.</p>
+        </div>
+
+        <div class="sticky-cta">
+          <button class="btn btn-primary btn-xl" data-action="go-mode">فهمت، يلا نلعب</button>
         </div>
       </section>
 
@@ -147,6 +212,10 @@
           <span class="spacer"></span>
         </div>
         <div class="teams-grid" id="setupTeams"></div>
+        <div class="balance-row">
+          <p class="balance-hint" id="balanceHint" hidden></p>
+          <button type="button" class="btn btn-soft btn-sm" data-action="shuffle-teams"><svg><use href="#i-shuffle"/></svg>وزّع الفرق عشوائي</button>
+        </div>
         <div class="panel">
           <div class="panel-row">
             <label for="setupTime">وقت الجولة</label>
@@ -227,7 +296,7 @@
             <div class="flip-inner">
               <div class="flip-face flip-back"><i>؟</i></div>
               <div class="flip-face word-card">
-                <span class="word-cat" id="revealCat"></span>
+                <span class="word-meta"><span class="word-cat" id="revealCat"></span><span class="word-level"></span></span>
                 <span class="word-text" id="revealWord"></span>
               </div>
             </div>
@@ -252,7 +321,7 @@
               <div class="flip-inner">
                 <div class="flip-face flip-back"><i>؟</i></div>
                 <div class="flip-face word-card">
-                  <span class="word-cat" id="playCat"></span>
+                  <span class="word-meta"><span class="word-cat" id="playCat"></span><span class="word-level"></span></span>
                   <span class="word-text" id="playWord"></span>
                 </div>
               </div>
