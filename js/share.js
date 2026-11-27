@@ -2,7 +2,8 @@
 window.WB = window.WB || {};
 
 WB.Share = (() => {
-  const LIB = "https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js";
+  // المكتبة محفوظة داخل المشروع (js/vendor) عشان ما نعتمد على سيرفر خارجي ممكن ينحجب
+  const LIB = "js/vendor/qrcode.min.js";
   let libPromise = null;
 
   function loadLib() {
@@ -33,9 +34,10 @@ WB.Share = (() => {
   async function renderQR(el, text, label) {
     el.innerHTML = `<span class="qr-loading">جاري تجهيز الرمز…</span>`;
     try {
-      await loadLib();
+      // ما ننتظر للأبد: إذا ما تحمّلت المكتبة خلال ٦ ثواني نعرض الرابط بدل الرمز
+      await Promise.race([loadLib(), new Promise((_, no) => setTimeout(() => no(new Error("timeout")), 6000))]);
     } catch {
-      el.innerHTML = `<span class="qr-loading">ما قدرنا نجهز الرمز، استخدم الرابط بدله.</span>`;
+      el.innerHTML = `<span class="qr-loading">ما قدرنا نجهز الرمز، استخدموا الرابط:<br><b dir="ltr" class="qr-link">${text}</b></span>`;
       return;
     }
     const qr = window.qrcode(0, "M");
