@@ -97,7 +97,7 @@ WB.UI = (() => {
           <p class="who">${esc(name)}</p>
           <p class="muted">${reading ? "الكلمة عند الشارح الحين" : "على الشرح بهالدور"} <span class="dots"><i></i><i></i><i></i></span></p>
         </div>
-        <p class="hint">${v.myTeam === ti ? "جهّز نفسك، أنت من فريقه وبتخمّن!" : v.myTeam === 1 - ti ? "ركّز! إذا خلص الوقت وما جابوها، عندكم ٢٠ ثانية تسرقونها." : ""}</p>
+        <p class="hint">${v.myTeam === ti ? "جهّز نفسك، أنت من فريقه وبتخمّن!" : v.myTeam === 1 - ti ? "ركّز على الشرح وحاول تخمّن الكلمة! إذا خلص الوقت وما جابوها، عندكم ٢٠ ثانية تسرقونها." : ""}</p>
         ${v.offlineNote ? `<p class="banner">${esc(v.offlineNote)}</p>` : ""}`;
     }
     $("#turnView").innerHTML = html;
@@ -326,6 +326,7 @@ WB.UI = (() => {
     $(".play").classList.toggle("stealing", stealing); // نصغّر المؤقت والكرت عشان الأزرار تبان
     banner.classList.toggle("a", other === 0);
     $("#stealText").textContent = `فريق ${s.teams[other].name}: عندكم ٢٠ ثانية تسرقونها!`;
+    $("#stealTip").textContent = "ركّزوا على الشرح وحاولوا تخمّنون الكلمة.";
 
     $("#playExplainer").hidden = !v.word;
     $("#playWatcher").hidden = !!v.word;
@@ -347,12 +348,14 @@ WB.UI = (() => {
       const name = ex ? ex.name : "الشارح";
       if (stealing) {
         $("#watchTitle").textContent = v.myTeam === other ? "يلا اسرقوها!" : "الفريق الثاني يحاول يسرقها";
-        $("#watchSub").textContent = `القرار عند ${name}: سرقوها أو لا.`;
+        $("#watchSub").textContent = v.myTeam === other
+          ? `ركّز على الشرح وحاول تخمّن الكلمة. والقرار عند ${name}: سرقتوها أو لا.`
+          : `القرار عند ${name}: سرقوها أو لا.`;
       } else {
         $("#watchTitle").textContent = `${name} على الشرح الحين`;
         $("#watchSub").textContent = v.myTeam === s.turnTeam
           ? "خمّن بصوت عالي! الكلمة عند الشارح بس."
-          : `دور فريق ${s.teams[s.turnTeam].name}. ركّزوا، إذا خلص الوقت ممكن تسرقونها.`;
+          : `ركّز على الشرح وحاول تخمّن الكلمة. إذا خلص وقت فريق ${s.teams[s.turnTeam].name}، عندكم ٢٠ ثانية تسرقونها.`;
       }
     }
   }

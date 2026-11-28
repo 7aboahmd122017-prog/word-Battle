@@ -230,6 +230,7 @@ p { margin: 0; }
 .steal-banner.a { --tc: var(--team-a); }
 .steal-banner b { font-family: var(--font-art); font-weight: 400; font-size: 1.5rem; color: var(--tc); }
 .steal-banner span { font-weight: 600; }
+.steal-banner small { color: var(--muted); font-size: 0.85rem; }
 .play.stealing { gap: 12px; justify-content: flex-start; }
 .play.stealing .timer { width: min(132px, 36vw); }
 .play.stealing .timer-num b { font-size: 2.6rem; }
