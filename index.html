@@ -112,7 +112,7 @@
           </li>
           <li>
             <b>٥</b>
-            <div><h3>جابوها أو سرقوها</h3><p>جابوها قبل الوقت؟ اضغط «جابوها» أو اسحب الكرت لفوق، ويحصل فريقك على نقطة. إذا خلص الوقت أو ضغطت «ما جابوها»، الفريق الثاني عنده <b>٢٠ ثانية يسرقونها</b>. بعدها الشارح يحدد النقطة لمين: لفريقه، أو للي سرقوها، أو ولا أحد. وبعدها الدور ينتقل للفريق الثاني.</p></div>
+            <div><h3>جابوها أو سرقوها</h3><p>جابوها قبل الوقت؟ اضغط «جابوها» أو اسحب الكرت لفوق، ويحصل فريقك على نقطة. إذا خلص الوقت أو ضغطت «ما جابوها»، الفريق الثاني عنده <b>٢٠ ثانية يسرقونها</b>، وفريقك ما عاد له نقطة. الشارح يحدد: سرقوها والنقطة لهم، أو ما سرقوها وما أحد ياخذ نقطة. وبعدها الدور ينتقل للفريق الثاني.</p></div>
           </li>
         </ol>
 
@@ -345,11 +345,11 @@
               <button class="btn btn-miss" data-action="miss"><svg><use href="#i-x"/></svg>ما جابوها</button>
             </div>
             <!-- بعد ما يخلص الوقت: الشارح يحدد النقطة لمين -->
+            <!-- وقت السرقة للفريق الثاني بس: الشارح يحدد سرقوها أو لا -->
             <div class="steal-verdict" id="stealVerdict" hidden>
-              <p class="steal-q">النقطة لمين؟</p>
-              <button class="btn btn-award own" data-action="award-own"><span class="dot"></span><span id="awardOwn">فريقي</span></button>
-              <button class="btn btn-award other" data-action="award-other"><span class="dot"></span><span id="awardOther">الفريق الثاني</span></button>
-              <button class="btn btn-ghost" data-action="award-none">ولا أحد جابها</button>
+              <p class="steal-q" id="stealQ">سرقوها؟</p>
+              <button class="btn btn-award other" data-action="award-other"><span class="dot"></span><span id="awardOther">سرقوها</span></button>
+              <button class="btn btn-ghost" data-action="award-none">ما سرقوها</button>
             </div>
           </div>
           <div id="playWatcher" hidden>

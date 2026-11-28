@@ -118,10 +118,9 @@ WB.Online = (() => {
         if (s.phase === "play" && isEx) { Engine.startSteal(s); commit(); }
         break;
       case "award":
-        // الشارح يحدد النقطة لمين بعد الوقت
-        if (["play", "steal"].includes(s.phase) && isEx) {
-          const to = a.who === "own" ? s.turnTeam : a.who === "other" ? 1 - s.turnTeam : null;
-          Engine.record(s, to, cleanWord(a.word));
+        // وقت السرقة: الشارح يحدد سرقوها أو لا. فريق الشارح ما له نقطة بعد وقته
+        if (s.phase === "steal" && isEx) {
+          Engine.record(s, a.who === "other" ? 1 - s.turnTeam : null, cleanWord(a.word));
           commit();
         }
         break;
@@ -606,9 +605,9 @@ WB.Online = (() => {
       UI.$$(".verdict .btn").forEach((b) => (b.disabled = true));
       act({ act: "verdict", got, word: myWord() });
     },
-    /** بعد الوقت: الشارح يحدد النقطة لمين ("own" أو "other" أو "none") */
+    /** وقت السرقة: الشارح يحدد سرقوها ("other") أو لا ("none") */
     award(who) {
-      if (!st || !["play", "steal"].includes(st.phase) || st.explainerId !== me.id) return;
+      if (!st || st.phase !== "steal" || st.explainerId !== me.id) return;
       act({ act: "award", who, word: myWord() });
     },
     next() { act({ act: "next" }); },

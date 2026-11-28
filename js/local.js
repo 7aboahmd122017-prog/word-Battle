@@ -270,10 +270,11 @@ WB.Local = (() => {
       else startSteal();
     },
 
-    /** بعد الوقت: الشارح يحدد النقطة لمين ("own" أو "other" أو "none") */
+    /** وقت السرقة: الشارح يحدد سرقوها ("other") أو لا ("none").
+        فريق الشارح ما له نقطة بعد ما يخلص وقته */
     award(who) {
-      if (!s || !["play", "steal"].includes(s.phase)) return;
-      finish(who === "own" ? s.turnTeam : who === "other" ? 1 - s.turnTeam : null);
+      if (!s || s.phase !== "steal") return;
+      finish(who === "other" ? 1 - s.turnTeam : null);
     },
 
     next() {

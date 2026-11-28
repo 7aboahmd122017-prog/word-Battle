@@ -210,7 +210,6 @@ WB.App = (() => {
     "miss": () => verdict(false),
     "next": () => ctrl && ctrl.next(),
     "rematch": () => ctrl && ctrl.rematch(),
-    "award-own": () => award("own"),
     "award-other": () => award("other"),
     "award-none": () => award("none"),
     "online-create": () => Online.create(),

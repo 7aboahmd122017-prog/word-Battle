@@ -338,9 +338,8 @@ WB.UI = (() => {
       $("#playVerdict").hidden = stealing;
       $("#stealVerdict").hidden = !stealing;
       $("#swipeHint").hidden = stealing;
-      $("#awardOwn").textContent = `فريقي (${s.teams[own].name})`;
-      $("#awardOther").textContent = `سرقها فريق ${s.teams[other].name}`;
-      $('[data-action="award-own"]').className = `btn btn-award ${teamClass(own)}`;
+      $("#stealQ").textContent = `فريق ${s.teams[other].name} سرقوها؟`;
+      $("#awardOther").textContent = `إيه سرقوها، النقطة لـ ${s.teams[other].name}`;
       $('[data-action="award-other"]').className = `btn btn-award ${teamClass(other)}`;
       $$("#playExplainer .verdict .btn, #stealVerdict .btn").forEach((b) => (b.disabled = false));
     } else {
@@ -348,7 +347,7 @@ WB.UI = (() => {
       const name = ex ? ex.name : "الشارح";
       if (stealing) {
         $("#watchTitle").textContent = v.myTeam === other ? "يلا اسرقوها!" : "الفريق الثاني يحاول يسرقها";
-        $("#watchSub").textContent = `بعدها القرار عند ${name}: النقطة لمين.`;
+        $("#watchSub").textContent = `القرار عند ${name}: سرقوها أو لا.`;
       } else {
         $("#watchTitle").textContent = `${name} على الشرح الحين`;
         $("#watchSub").textContent = v.myTeam === s.turnTeam
@@ -361,7 +360,7 @@ WB.UI = (() => {
   /** رسالة تحت الكرت لما يخلص وقت السرقة */
   function stealOver() {
     const m = $("#timeupMsg");
-    m.textContent = "خلص وقت السرقة! حدد النقطة لمين.";
+    m.textContent = "خلص وقت السرقة! سرقوها أو لا؟";
     m.hidden = false;
   }
 
