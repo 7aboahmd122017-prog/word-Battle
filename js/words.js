@@ -203,11 +203,16 @@ WB.Words = (() => {
       إذا خلصت كلمات مستوى في فئة، نبدأ له دورة جديدة.
       exclude: معرّفات إضافية لا تُختار (مثل الكلمات المستخدمة في الغرفة). */
   function pick(categoryIds, exclude = []) {
+    // الكلمات اللي بلّغ عنها هالجهاز ما تطلع أبداً
+    const hidden = new Set(WB.Reports ? WB.Reports.hiddenIds() : []);
+    const idsOf = (c, lv) => (c[lv] || []).map((_, i) => `${c.id}:${lv}:${i}`).filter((id) => !hidden.has(id));
+    const levelsOf = (c) => LEVEL_IDS.filter((lv) => idsOf(c, lv).length);
+
     const cats = WB.CATEGORIES.filter((c) => categoryIds.includes(c.id));
-    const pool = cats.length ? cats : WB.CATEGORIES;
-    const cat = rand(pool);
-    const level = rand(LEVEL_IDS.filter((lv) => (cat[lv] || []).length));
-    const ids = cat[level].map((_, i) => `${cat.id}:${level}:${i}`);
+    const pool = (cats.length ? cats : WB.CATEGORIES).filter((c) => levelsOf(c).length);
+    const cat = rand(pool.length ? pool : WB.CATEGORIES);
+    const level = rand(levelsOf(cat).length ? levelsOf(cat) : LEVEL_IDS.filter((lv) => (cat[lv] || []).length));
+    const ids = idsOf(cat, level).length ? idsOf(cat, level) : cat[level].map((_, i) => `${cat.id}:${level}:${i}`);
 
     const used = loadUsed();
     const ex = new Set(exclude);
