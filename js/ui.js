@@ -16,14 +16,17 @@ WB.UI = (() => {
   const WIDE_SCREENS = ["setup", "online", "mode"];
 
   function show(name) {
-    if (name !== current) {
+    const changed = name !== current;
+    if (changed) {
       if (current !== "settings") previous = current;
       current = name;
     }
     $$(".screen").forEach((s) => s.classList.toggle("active", s.dataset.screen === name));
     document.body.classList.toggle("wide", WIDE_SCREENS.includes(name));
     $("#gamebar").hidden = !GAME_SCREENS.includes(name);
-    window.scrollTo({ top: 0 });
+    // نطلع لأول الصفحة بس لما ننتقل لشاشة ثانية، مو لما تنعاد نفس الشاشة
+    // (مثلاً المضيف يعدّل الوقت في غرفة الانتظار)
+    if (changed) window.scrollTo({ top: 0 });
   }
 
   /* ===== شريط النقاط ===== */
@@ -445,12 +448,19 @@ WB.UI = (() => {
   }
 
   /* ===== نافذة التأكيد والتنبيه ===== */
-  function confirm(title, text, okText = "تمام") {
+  /** رسالة مهمة بزر واحد (مثلاً: المضيف أنهى المباراة) */
+  function notify(title, text, okText = "تمام") {
+    return confirm(title, text, okText, { single: true });
+  }
+
+  function confirm(title, text, okText = "تمام", { single = false } = {}) {
     return new Promise((resolve) => {
       const m = $("#modal");
       $("#modalTitle").textContent = title;
       $("#modalText").textContent = text;
       $("#modalOk").textContent = okText;
+      $("#modalCancel").hidden = single;
+      $(".modal-actions").classList.toggle("single", single);
       m.hidden = false;
       const done = (v) => { m.hidden = true; $("#modalOk").onclick = $("#modalCancel").onclick = null; resolve(v); };
       $("#modalOk").onclick = () => done(true);
@@ -473,6 +483,6 @@ WB.UI = (() => {
     show, current: () => current, previous: () => previous,
     updateBar, renderSteppers, renderCategoryChips, syncSettingsScreen,
     renderTurn, renderReveal, renderPlay, renderResult, renderWin, scoreboardHTML,
-    Timer, confirm, toast, sparks, setSkip, swapWord, stealOver
+    Timer, confirm, notify, toast, sparks, setSkip, swapWord, stealOver
   };
 })();

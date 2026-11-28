@@ -371,5 +371,12 @@ WB.App = (() => {
   }
 
   document.addEventListener("DOMContentLoaded", init);
-  return { refreshHome };
+  /** الغرفة انتهت من طرف المضيف: نفك ارتباط الشاشة باللعب الأونلاين */
+  function endOnline() {
+    if (ctrl && ctrl.kind === "online") ctrl = null;
+    UI.Timer.stop();
+    delete document.body.dataset.team;
+  }
+
+  return { refreshHome, endOnline };
 })();

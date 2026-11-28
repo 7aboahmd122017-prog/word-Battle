@@ -196,6 +196,7 @@ WB.Online = (() => {
   const gone = new Map(); // id → {meta, at}
   let present = [];       // المتصلين فعلياً حسب السيرفر
   let graceTimer = null;
+  let seenHost = false;   // شفنا المضيف متصل مرة على الأقل (عشان ما نعتبره طلع قبل ما يوصلنا)
 
   function onPresence(list) {
     const now = Date.now();
@@ -215,6 +216,13 @@ WB.Online = (() => {
     }
 
     if (before.size && list.some((r) => !before.has(r.id))) Sound.play("join");
+
+    // المضيف طلع وخلصت مهلته (٢٠ ثانية) وما رجع: المباراة انتهت
+    if (!isHost() && st && st.hostId) {
+      if (roster.some((r) => r.id === st.hostId)) seenHost = true;
+      else if (seenHost) { roomClosed(true); return; }
+    }
+
     if (autoTeam()) return;
     if (isHost() && reconcile()) { commit(); return; }
     render();
@@ -271,9 +279,9 @@ WB.Online = (() => {
   function netBanner() {
     const b = UI.$("#netBanner");
     if (!st || isHost() || !connected()) { b.hidden = true; return; }
-    const hostOn = roster.some((r) => r.host && r.id === st.hostId);
-    b.hidden = hostOn;
-    b.textContent = "المضيف انقطع اتصاله… بانتظار رجوعه.";
+    const host = roster.find((r) => r.id === st.hostId);
+    b.hidden = !!host && !host.away;
+    b.textContent = "المضيف انقطع اتصاله… ننتظره ٢٠ ثانية، وإذا ما رجع تنتهي المباراة.";
   }
 
   function fx() {
@@ -456,7 +464,7 @@ WB.Online = (() => {
     UI.Timer.stop();
     if (tx) tx.leave();
     tx = null; st = null; roster = []; code = null; lastKey = ""; lastFx = "";
-    clearTimeout(graceTimer); gone.clear(); present = [];
+    clearTimeout(graceTimer); gone.clear(); present = []; seenHost = false;
     UI.$("#netBanner").hidden = true;
   }
 
@@ -530,12 +538,23 @@ WB.Online = (() => {
     }
   }
 
-  function roomClosed() {
+  /** الغرفة انتهت: نرجّع اللاعب للبداية ونعلمه برسالة واضحة.
+      left=true يعني المضيف طلع (انقطع وما رجع)، مو إنه أنهاها بنفسه */
+  function roomClosed(left = false) {
     resetLocal();
     sSet(ROOM_KEY, null);
-    UI.toast("المضيف أنهى الغرفة");
+    sSet(WORD_KEY, null);
+    if (WB.App) WB.App.endOnline();
     UI.show("home");
-    WB.App && WB.App.refreshHome();
+    Sound.play("miss");
+    Sound.vibrate([120, 60, 120]);
+    UI.notify(
+      "انتهت المباراة",
+      left
+        ? "المضيف طلع من الغرفة وما رجع، فانتهت المباراة. تقدرون تبدون مباراة جديدة من «يلا نلعب»."
+        : "المضيف أنهى المباراة. تقدرون تبدون مباراة جديدة من «يلا نلعب».",
+      "تمام"
+    );
   }
 
   // لما يرجع الجوال من القفل أو من تطبيق ثاني: نعلن وجودنا من جديد ونطلب آخر حالة،
@@ -674,13 +693,25 @@ WB.Online = (() => {
     render() { lastKey = ""; render(); },
 
     quit() {
-      if (isHost() && tx) {
-        tx.send({ type: "closed", hostId: me.id });
-        try { localStorage.removeItem(hostKey()); } catch { /* تجاهل */ }
-      }
-      resetLocal();
       sSet(ROOM_KEY, null);
       sSet(WORD_KEY, null);
+      const wasHost = isHost();
+      const id = me && me.id;
+      if (wasHost) { try { localStorage.removeItem(hostKey()); } catch { /* تجاهل */ } }
+      // نصفّر حالتنا على طول (عشان لو سوّى غرفة جديدة مباشرة ما تتأثر)،
+      // ونقفل الاتصال القديم بعد ما نتأكد إن رسالة «انتهت» وصلت للاعبين
+      const old = tx;
+      tx = null;
+      resetLocal();
+      if (!old) return;
+      (async () => {
+        if (wasHost) {
+          try { await old.send({ type: "closed", hostId: id }); } catch { /* تجاهل */ }
+          await new Promise((r) => setTimeout(r, 300));
+          try { await old.send({ type: "closed", hostId: id }); } catch { /* تجاهل */ }
+        }
+        try { await old.leave(); } catch { /* تجاهل */ }
+      })();
     }
   };
 
