@@ -221,7 +221,8 @@ WB.UI = (() => {
     $$(".report-btn").forEach((b) => {
       const onReveal = !!b.closest('[data-screen="reveal"]');
       b.hidden = !visible || left <= 0 || (onReveal && !flipped);
-      b.querySelector("span").textContent = `🚩 فيها غلط؟ (باقي ${toArabicDigits(left)})`;
+      // الحد (٣ بالدور) مخفي عن اللاعب عن قصد، عشان ما يعرف كم يقدر يبلّغ
+      b.querySelector("span").textContent = "🚩 فيها غلط؟";
     });
   }
 
