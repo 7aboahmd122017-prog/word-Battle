@@ -52,7 +52,8 @@ returns boolean
 language sql stable
 set search_path = ''
 as $$
-  select coalesce(auth.jwt() ->> 'email', '') = 'ADMIN_EMAIL_HERE'
+  -- lower + trim: ما تفرق الحروف الكبيرة ولا المسافات الزايدة
+  select lower(trim(coalesce(auth.jwt() ->> 'email', ''))) = lower(trim('ADMIN_EMAIL_HERE'))
 $$;
 
 -- ٦) القراءة والتعديل والحذف: الأدمن بس
