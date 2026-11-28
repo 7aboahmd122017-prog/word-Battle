@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>معاينة لوحة البلاغات (بيانات وهمية)</title>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Lalezar&family=Readex+Pro:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../css/style.css" />
+  <link rel="stylesheet" href="../css/admin.css" />
+</head>
+<body class="admin">
+  <!-- نفس محتوى admin.html، بس بدل Supabase نستخدم بيانات وهمية للمعاينة -->
+  <main class="admin-wrap">
+    <header class="admin-head">
+      <div><h1 class="admin-title">لوحة البلاغات</h1><p class="muted small" id="whoami"></p></div>
+      <button class="btn btn-ghost btn-sm" id="logoutBtn" hidden>خروج</button>
+    </header>
+    <section id="login" class="panel login-panel" hidden>
+      <form id="loginForm" class="login-form">
+        <input type="email" id="loginEmail" /><input type="password" id="loginPass" />
+        <p class="form-error" id="loginError"></p><button type="submit" id="loginBtn">دخول</button>
+      </form>
+    </section>
+    <section id="dash" hidden>
+      <div class="stats">
+        <div class="stat"><b id="statNew">٠</b><span>بلاغ جديد</span></div>
+        <div class="stat"><b id="statWords">٠</b><span>كلمة تحتاج مراجعة</span></div>
+        <div class="stat"><b id="statDone">٠</b><span>بلاغ محلول</span></div>
+      </div>
+      <div class="toolbar">
+        <div class="tabs" role="tablist">
+          <button class="tab" role="tab" data-tab="new" aria-selected="true">جديدة</button>
+          <button class="tab" role="tab" data-tab="done" aria-selected="false">محلولة</button>
+        </div>
+        <input type="search" id="search" placeholder="ابحث عن كلمة…" aria-label="بحث" />
+        <button class="btn btn-ghost btn-sm" id="refreshBtn">تحديث</button>
+      </div>
+      <p class="form-error" id="dashError"></p>
+      <div id="cards" class="cards"></div>
+    </section>
+  </main>
+  <script>
+    window.WB = { CONFIG: { SUPABASE_URL: "x", SUPABASE_ANON_KEY: "x" } };
+    const now = Date.now(), m = 60000;
+    const fake = [
+      { id: 1, word_id: "food:medium:2", word: "قرصان", category: "أكل ومشروبات", level: "متوسط", reason: "unclear", details: "ناس كثير ما تعرفها، يمكن تكون صعب بدل متوسط", reporter: "علي", room_code: "ZXA8C", device_id: "a1b2c3d4", created_at: new Date(now - 5*m).toISOString(), resolved: false },
+      { id: 2, word_id: "food:medium:2", word: "قرصان", category: "أكل ومشروبات", level: "متوسط", reason: "unclear", details: "", reporter: "سارة", room_code: "ZXA8C", device_id: "z9y8x7w6", created_at: new Date(now - 30*m).toISOString(), resolved: false },
+      { id: 3, word_id: "parts:easy:11", word: "سيفون", category: "قطع وأجزاء", level: "سهل", reason: "inappropriate", details: "<b>نص فيه كود</b> المفروض ينعرض كنص عادي", reporter: "خالد", room_code: null, device_id: "k5k5k5k5", created_at: new Date(now - 3*3600000).toISOString(), resolved: false },
+      { id: 4, word_id: "things:easy:3", word: "شنطة سفر", category: "أشياء ومقتنيات", level: "سهل", reason: "spelling", details: "تمام", reporter: "فهد", room_code: null, device_id: "f0f0f0f0", created_at: new Date(now - 2*86400000).toISOString(), resolved: true }
+    ];
+    const q = { select() { return q; }, order() { return q; }, limit() { return Promise.resolve({ data: fake, error: null }); },
+      update() { return { eq: () => ({ eq: () => Promise.resolve({ error: null }) }) }; } };
+    window.supabase = { createClient: () => ({
+      auth: { getSession: () => Promise.resolve({ data: { session: { user: { email: "admin@example.com" } } } }), signOut: () => Promise.resolve() },
+      from: () => q
+    }) };
+  </script>
+  <script src="../js/reports.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>
