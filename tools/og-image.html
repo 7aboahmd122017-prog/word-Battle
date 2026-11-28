@@ -1,0 +1,55 @@
+<!doctype html>
+<!-- تصميم صورة بطاقة المشاركة (1200×630). تتصوّر بـ: node tools/make-og-image.js -->
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600&family=Lalezar&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; }
+  body {
+    background: #0b0c12; color: #eef0f7; font-family: "IBM Plex Sans Arabic", sans-serif;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 110px;
+    position: relative;
+  }
+  .glow { position: absolute; border-radius: 50%; filter: blur(110px); }
+  .g1 { width: 620px; height: 620px; background: #6a55f0; opacity: .32; top: -300px; right: -160px; }
+  .g2 { width: 520px; height: 520px; background: #1fb990; opacity: .18; bottom: -320px; left: -120px; }
+  .text { position: relative; display: grid; gap: 22px; }
+  h1 {
+    font-family: "Lalezar", sans-serif; font-weight: 400; font-size: 124px; line-height: 1.05;
+    background: linear-gradient(100deg, #fff 30%, #cfc6ff 60%, #8f7bff); -webkit-background-clip: text; color: transparent;
+    display: flex; align-items: center; gap: 18px;
+  }
+  .q {
+    -webkit-text-fill-color: #05241b; background: #3fe0b5; border-radius: 26px; font-size: 92px;
+    width: 112px; height: 112px; display: grid; place-items: center; transform: rotate(-10deg);
+    box-shadow: 0 18px 40px -14px rgba(63,224,181,.7);
+  }
+  p { font-size: 36px; color: #c9cde0; font-weight: 600; max-width: 600px; line-height: 1.5; }
+  .tags { display: flex; gap: 12px; }
+  .tag { font-size: 24px; padding: 8px 20px; border-radius: 99px; border: 2px solid rgba(143,123,255,.45); color: #d6cfff; background: rgba(143,123,255,.12); }
+  .tag.m { border-color: rgba(63,224,181,.45); color: #9ff0d8; background: rgba(63,224,181,.1); }
+  .url { font-size: 26px; color: #8f95ab; direction: ltr; text-align: right; }
+  .deck { position: relative; width: 300px; height: 380px; }
+  .card { position: absolute; inset: 0; border-radius: 34px; border: 2px solid rgba(255,255,255,.12); background: linear-gradient(165deg, #1f1b3b, #13122a); }
+  .c3 { transform: rotate(-12deg) translate(40px, 10px); opacity: .7; }
+  .c2 { transform: rotate(9deg) translate(-36px, 6px); opacity: .85; }
+  .c1 { display: grid; place-items: center; border-color: rgba(143,123,255,.45); background: linear-gradient(165deg, #241f45, #16142a 70%); }
+  .c1 span { font-family: "Lalezar", sans-serif; font-size: 190px; color: #3fe0b5; line-height: 1; }
+</style>
+</head>
+<body>
+  <div class="glow g1"></div><div class="glow g2"></div>
+  <div class="text">
+    <h1>وش الكلمة<span class="q">؟</span></h1>
+    <p>اشرح بدون ما تقولها… وخلّ فريقك يجيبها قبل لا يخلص الوقت</p>
+    <div class="tags"><span class="tag">لعبة جماعية للشلة</span><span class="tag m">مجانية بدون تحميل</span></div>
+    <div class="url">t0imi.github.io/wesh</div>
+  </div>
+  <div class="deck">
+    <div class="card c3"></div><div class="card c2"></div>
+    <div class="card c1"><span>؟</span></div>
+  </div>
+</body>
+</html>

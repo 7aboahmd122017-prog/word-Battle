@@ -201,6 +201,14 @@ WB.App = (() => {
     "skip-word": () => ctrl && ctrl.skipWord && ctrl.skipWord(),
     "report-word": async () => {
       if (!ctrl || !ctrl.reportWord) return;
+      if (UI.reportsLeft() <= 0) {
+        UI.notify(
+          "خلصت بلاغاتك في هالدور",
+          "استهلكت البلاغات المسموحة لك في هالدور، عشان ما يصير البلاغ طريقة لتخطي الكلمات الصعبة. إذا الكلمة صعبة استخدم «تخطّاها» أو كمّل الشرح، وتقدر تبلّغ من جديد في دورك الجاي.",
+          "تمام"
+        );
+        return;
+      }
       const res = await UI.openReport();
       if (res && ctrl) ctrl.reportWord(res);
     },

@@ -220,7 +220,9 @@ WB.UI = (() => {
     const flipped = $("#revealCard").classList.contains("shown");
     $$(".report-btn").forEach((b) => {
       const onReveal = !!b.closest('[data-screen="reveal"]');
-      b.hidden = !visible || left <= 0 || (onReveal && !flipped);
+      // يبقى ظاهر حتى لو خلصت البلاغات؛ الضغطة الزايدة تطلع رسالة توضيح (في app.js)
+      b.hidden = !visible || (onReveal && !flipped);
+      b.classList.toggle("used-up", left <= 0);
       // الحد (٣ بالدور) مخفي عن اللاعب عن قصد، عشان ما يعرف كم يقدر يبلّغ
       b.querySelector("span").textContent = "🚩 فيها غلط؟";
     });
@@ -276,7 +278,8 @@ WB.UI = (() => {
     card.classList.remove("shown", "nudge");
     setTimeout(() => {
       fillWord(card, $(isReveal ? "#revealCat" : "#playCat"), $(isReveal ? "#revealWord" : "#playWord"), word, false);
-      requestAnimationFrame(() => card.classList.add("shown"));
+      // مؤقت عادي (مو requestAnimationFrame) عشان ما يتجمّد لو الصفحة بالخلفية
+      setTimeout(() => { card.classList.add("shown"); applyReport(); }, 30);
       card.setAttribute("aria-pressed", "true");
       if (isReveal) {
         $('[data-action="start-timer"]').disabled = false;
@@ -545,6 +548,7 @@ WB.UI = (() => {
     show, current: () => current, previous: () => previous,
     updateBar, renderSteppers, renderCategoryChips, syncSettingsScreen,
     renderTurn, renderReveal, renderPlay, renderResult, renderWin, scoreboardHTML,
-    Timer, confirm, notify, toast, sparks, setSkip, setReport, openReport, swapWord, stealOver
+    Timer, confirm, notify, toast, sparks, setSkip, setReport, openReport, swapWord, stealOver,
+    reportsLeft: () => reportState.left
   };
 })();
