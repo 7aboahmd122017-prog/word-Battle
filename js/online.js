@@ -73,9 +73,9 @@ WB.Online = (() => {
     ? { id: String(w.id || ""), text: String(w.text || "").slice(0, 80), catName: String(w.catName || "").slice(0, 30) }
     : null);
 
-  // إذا انقطع اتصال الشارح هالمدة، الدور ينتقل لغيره من نفس الفريق تلقائياً
-  // (ما فيه أحد عنده صلاحية يتخطى الشارح بيده)
-  const OFFLINE_SKIP_MS = 15000;
+  // الشارح المنقطع ننتظره مهلة الـ ٢٠ ثانية (GRACE_MS تحت). إذا ما رجع، الدور ينتقل
+  // لغيره من نفس الفريق تلقائياً. ما فيه أحد عنده صلاحية يتخطى الشارح بيده.
+  const OFFLINE_SKIP_MS = 0;
   let offlineSince = null;
 
   /** فحص دوري عند المضيف: انتهاء الوقت، والشارح المنقطع */
@@ -87,6 +87,8 @@ WB.Online = (() => {
     if (s.phase === "play" && s.endsAt && now > s.endsAt + 1500) { Engine.startSteal(s, now); commit(); return; }
     const ex = Engine.explainer(s);
     const live = ["turn", "reveal", "play", "steal"].includes(s.phase);
+    // ما كان فيه أحد متصل من الفريق، ورجع واحد منهم: نختار شارح ونكمل
+    if (s.phase === "turn" && !ex && s.teams[s.turnTeam].players.some((p) => !p.off)) { Engine.beginTurn(s); commit(); return; }
     if (live && ex && ex.off) {
       if (!offlineSince || offlineSince.id !== ex.id || offlineSince.round !== s.round) offlineSince = { id: ex.id, round: s.round, at: now };
       else if (now - offlineSince.at > OFFLINE_SKIP_MS) { offlineSince = null; Engine.beginTurn(s); commit(); }
@@ -142,7 +144,10 @@ WB.Online = (() => {
     const online = new Map(roster.map((r) => [r.id, r]));
     for (const [id, p] of inGame) {
       const r = online.get(id);
+      // away = انقطع وننتظره (مهلة ٢٠ ثانية)، off = طلع نهائياً
       if (!!p.off !== !r) { p.off = !r; changed = true; }
+      const away = !!(r && r.away);
+      if (!!p.away !== away) { p.away = away; changed = true; }
       if (r && r.name && r.name !== p.name) { p.name = r.name; changed = true; }
     }
     for (const r of roster) {
@@ -185,10 +190,31 @@ WB.Online = (() => {
     render();
   }
 
+  /* مهلة ٢٠ ثانية: إذا انطفى جوال لاعب أو قفل الشاشة، يبقى في الغرفة بعلامة «انقطع…»
+     ولو رجع خلالها يكمل عادي. بعدها يطلع من القائمة، ولازم يرجع يفتح الموقع. */
+  const GRACE_MS = 20000;
+  const gone = new Map(); // id → {meta, at}
+  let present = [];       // المتصلين فعلياً حسب السيرفر
+  let graceTimer = null;
+
   function onPresence(list) {
-    const before = new Set(roster.map((r) => r.id));
-    roster = list;
-    if (before.size && roster.some((r) => !before.has(r.id))) Sound.play("join");
+    const now = Date.now();
+    const ids = new Set(list.map((r) => r.id));
+    const before = new Set(present.map((r) => r.id));
+    for (const r of present) if (!ids.has(r.id) && !gone.has(r.id)) gone.set(r.id, { meta: r, at: now });
+    for (const id of ids) gone.delete(id);
+    for (const [id, g] of gone) if (now - g.at >= GRACE_MS) gone.delete(id);
+    present = list;
+    roster = [...list, ...[...gone.values()].map((g) => ({ ...g.meta, away: true }))];
+
+    // نرجع نحسب أول ما تخلص مهلة أقرب واحد انقطع
+    clearTimeout(graceTimer);
+    if (gone.size) {
+      const next = Math.min(...[...gone.values()].map((g) => g.at + GRACE_MS)) - now;
+      graceTimer = setTimeout(() => onPresence(present), Math.max(0, next) + 50);
+    }
+
+    if (before.size && list.some((r) => !before.has(r.id))) Sound.play("join");
     if (autoTeam()) return;
     if (isHost() && reconcile()) { commit(); return; }
     render();
@@ -279,7 +305,7 @@ WB.Online = (() => {
     if (UI.current() === "settings") return;
     const key = JSON.stringify([
       st.gameId, st.phase, st.round, st.explainerId, st.winner, st.settings.target,
-      st.teams.map((t) => [t.name, t.score, t.players.map((p) => `${p.id}${p.off ? 0 : 1}${p.name}`)])
+      st.teams.map((t) => [t.name, t.score, t.players.map((p) => `${p.id}${p.off ? 0 : p.away ? 2 : 1}${p.name}`)])
     ]);
     if (key === lastKey) return;
     lastKey = key;
@@ -302,7 +328,9 @@ WB.Online = (() => {
         } else {
           UI.renderTurn({
             state: st, role: "other", myTeam: me.team,
-            offlineNote: ex && ex.off ? "الشارح انقطع اتصاله. إذا ما رجع خلال ١٥ ثانية، الدور ينتقل لغيره تلقائياً." : ""
+            offlineNote: !ex
+              ? `ما فيه أحد متصل من فريق ${st.teams[st.turnTeam].name}. اللعبة تكمل أول ما يرجع واحد منهم.`
+              : ex.away || ex.off ? "الشارح انقطع اتصاله… ننتظره ٢٠ ثانية، وإذا ما رجع الدور ينتقل لغيره." : ""
           });
           UI.show("turn");
         }
@@ -378,8 +406,9 @@ WB.Online = (() => {
         </div>
         <ul class="players">
           ${list.map((p) => `
-            <li class="player">
+            <li class="player${p.away ? " offline" : ""}">
               <span class="name">${UI.esc(p.name)}</span>
+              ${p.away ? `<span class="tag away">انقطع…</span>` : ""}
               ${p.host ? `<span class="tag host">${UI.icon("crown")}المضيف</span>` : ""}
               ${p.id === me.id ? `<span class="tag me">أنت</span>` : ""}
             </li>`).join("") || `<li class="muted small">ما فيه أحد للحين</li>`}
@@ -427,6 +456,7 @@ WB.Online = (() => {
     UI.Timer.stop();
     if (tx) tx.leave();
     tx = null; st = null; roster = []; code = null; lastKey = ""; lastFx = "";
+    clearTimeout(graceTimer); gone.clear(); present = [];
     UI.$("#netBanner").hidden = true;
   }
 
@@ -507,6 +537,15 @@ WB.Online = (() => {
     UI.show("home");
     WB.App && WB.App.refreshHome();
   }
+
+  // لما يرجع الجوال من القفل أو من تطبيق ثاني: نعلن وجودنا من جديد ونطلب آخر حالة،
+  // عشان يرجع للغرفة على طول بدل ما ينتظر السيرفر يكتشف رجوعه
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden || !tx || !me) return;
+    try { tx.track(me); } catch { /* تجاهل */ }
+    if (isHost()) broadcast();
+    else tx.send({ type: "hello", from: me.id });
+  });
 
   /* ================= الأوامر ================= */
   const ctrl = {

@@ -56,7 +56,13 @@ WB.Transport = (() => {
       kind: "supabase",
       send: (payload) => ch.send({ type: "broadcast", event: "msg", payload }),
       track: (m) => { current = { ...m }; return ch.track(current); },
-      leave: () => { try { ch.untrack(); client.removeChannel(ch); } catch { /* تجاهل */ } }
+      // ننتظر رسالة الخروج توصل للسيرفر قبل ما نسكّر القناة؛ لو سكّرناها على طول
+      // ينقطع الاتصال قبل ما تطلع الرسالة، والباقين ما يدرون إنه طلع إلا بعد دقيقة
+      leave: async () => {
+        try { await ch.untrack(); } catch { /* تجاهل */ }
+        try { await ch.unsubscribe(); } catch { /* تجاهل */ }
+        try { client.removeChannel(ch); } catch { /* تجاهل */ }
+      }
     };
   }
 
@@ -109,5 +115,15 @@ WB.Transport = (() => {
     return configured() ? supabaseConnect(code, meta, handlers) : localConnect(code, meta, handlers);
   }
 
-  return { connect, configured };
+  /** للتشخيص من الكونسول: القنوات المفتوحة وحالة الاتصال */
+  function debug() {
+    if (!client) return { client: false };
+    const rt = client.realtime;
+    return {
+      connected: rt && rt.isConnected ? rt.isConnected() : null,
+      channels: client.getChannels().map((c) => ({ topic: c.topic, state: c.state }))
+    };
+  }
+
+  return { connect, configured, debug };
 })();

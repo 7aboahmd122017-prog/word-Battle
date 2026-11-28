@@ -28,6 +28,8 @@ WB.App = (() => {
   function closeSettings() {
     const prev = UI.previous();
     if (ctrl && ctrl.inGame() && ["turn", "reveal", "play", "result", "win", "online"].includes(prev)) {
+      // نطلع من شاشة الإعدادات أول، لأن العرض الأونلاين ما يرسم شي وإحنا فيها
+      UI.show(prev);
       ctrl.render();
     } else if (prev === "setup") {
       Local.openSetup();
