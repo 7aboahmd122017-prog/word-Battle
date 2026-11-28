@@ -208,6 +208,66 @@ WB.UI = (() => {
     });
   }
 
+  /** زر البلاغ: للشارح بس. left = كم بلاغ باقي له في هالدور (يختفي إذا صفر) */
+  let reportState = { visible: false, left: 0 };
+  function setReport(visible, left) {
+    reportState = { visible, left };
+    applyReport();
+  }
+  // في شاشة الكلمة، الزر ما يطلع إلا بعد ما يقلب الشارح الكرت ويشوف الكلمة
+  function applyReport() {
+    const { visible, left } = reportState;
+    const flipped = $("#revealCard").classList.contains("shown");
+    $$(".report-btn").forEach((b) => {
+      const onReveal = !!b.closest('[data-screen="reveal"]');
+      b.hidden = !visible || left <= 0 || (onReveal && !flipped);
+      b.querySelector("span").textContent = `🚩 فيها غلط؟ (باقي ${toArabicDigits(left)})`;
+    });
+  }
+
+  /** نافذة البلاغ: ترجّع {reason, details} أو null إذا لغى */
+  function openReport() {
+    return new Promise((resolve) => {
+      const m = $("#reportModal");
+      const box = $("#reportReasons");
+      const details = $("#reportDetails");
+      const count = $("#reportCount");
+      let reason = null;
+      box.innerHTML = WB.Reports.REASONS.map((r) =>
+        `<button type="button" class="chip" role="radio" aria-checked="false" aria-pressed="false" data-reason="${r.id}">${esc(r.label)}</button>`).join("");
+      details.value = "";
+      count.textContent = "٠ / ٢٠٠";
+      $("#reportError").textContent = "";
+      m.hidden = false;
+
+      box.onclick = (e) => {
+        const chip = e.target.closest("[data-reason]");
+        if (!chip) return;
+        reason = chip.dataset.reason;
+        $$("[data-reason]", box).forEach((c) => {
+          const on = c === chip;
+          c.setAttribute("aria-pressed", String(on));
+          c.setAttribute("aria-checked", String(on));
+        });
+        $("#reportError").textContent = "";
+      };
+      details.oninput = () => { count.textContent = `${toArabicDigits(details.value.length)} / ٢٠٠`; };
+
+      const done = (v) => {
+        m.hidden = true;
+        box.onclick = details.oninput = $("#reportSend").onclick = $("#reportCancel").onclick = m.onclick = null;
+        resolve(v);
+      };
+      $("#reportSend").onclick = () => {
+        if (!reason) { $("#reportError").textContent = "اختر نوع المشكلة أول."; return; }
+        done({ reason, details: details.value });
+      };
+      $("#reportCancel").onclick = () => done(null);
+      m.onclick = (e) => { if (e.target === m) done(null); };
+      box.querySelector("button").focus();
+    });
+  }
+
   /** تبديل الكلمة بعد التخطي: الكرت ينقلب، يتغير، ويرجع مكشوف للشارح */
   function swapWord(word, screen) {
     const isReveal = screen === "reveal";
@@ -240,6 +300,7 @@ WB.UI = (() => {
       $('[data-action="start-timer"]').disabled = false;
       $("#revealHint").textContent = "لا تقولها ولا تقول جزء منها. اضغط الكرت إذا تبي تخفيها.";
     }
+    if (card.id === "revealCard") applyReport();
   }
   document.addEventListener("click", (e) => {
     const card = e.target.closest(".flip");
@@ -483,6 +544,6 @@ WB.UI = (() => {
     show, current: () => current, previous: () => previous,
     updateBar, renderSteppers, renderCategoryChips, syncSettingsScreen,
     renderTurn, renderReveal, renderPlay, renderResult, renderWin, scoreboardHTML,
-    Timer, confirm, notify, toast, sparks, setSkip, swapWord, stealOver
+    Timer, confirm, notify, toast, sparks, setSkip, setReport, openReport, swapWord, stealOver
   };
 })();

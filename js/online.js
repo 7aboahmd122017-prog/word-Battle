@@ -275,6 +275,14 @@ WB.Online = (() => {
     return !!(saved && saved.key === `${code}:${st.gameId}:${st.round}` && saved.skipped);
   }
 
+  /** كم بلاغ باقي للشارح في هالدور (٣ بالكثير). محفوظ مع كلمته على جهازه */
+  const MAX_REPORTS = 3;
+  function reportsLeft() {
+    const saved = sGet(WORD_KEY);
+    const used = saved && saved.key === `${code}:${st.gameId}:${st.round}` ? saved.reports || 0 : 0;
+    return MAX_REPORTS - used;
+  }
+
   /* ================= العرض ================= */
   function netBanner() {
     const b = UI.$("#netBanner");
@@ -329,6 +337,7 @@ WB.Online = (() => {
         if (amEx && st.phase === "reveal") {
           UI.renderReveal(myWord());
           UI.setSkip(true, !skipUsed());
+          UI.setReport(true, reportsLeft());
           UI.show("reveal");
         } else if (amEx) {
           UI.renderTurn({ state: st, role: "me" });
@@ -348,6 +357,7 @@ WB.Online = (() => {
         timeUpShown = false;
         UI.renderPlay({ state: st, word: amEx ? myWord() : null, myTeam: me.team });
         UI.setSkip(amEx && st.phase === "play", amEx && !skipUsed());
+        UI.setReport(amEx && st.phase === "play", amEx ? reportsLeft() : 0);
         UI.show("play");
         UI.Timer.start(localEndsAt || Date.now(), st.timerTotal || st.settings.roundTime * 1000, onTimeUp);
         break;
@@ -651,11 +661,28 @@ WB.Online = (() => {
       const current = myWord();
       const next = Words.pick(st.settings.categories, [...(st.usedWords || []), current.id]);
       Words.markUsed(next.id);
-      sSet(WORD_KEY, { key: `${code}:${st.gameId}:${st.round}`, word: next, skipped: true });
+      const prev = sGet(WORD_KEY) || {};
+      sSet(WORD_KEY, { key: `${code}:${st.gameId}:${st.round}`, word: next, skipped: true, reports: prev.reports || 0 });
       Sound.play("reveal");
       Sound.vibrate(30);
       UI.setSkip(true, false);
       UI.swapWord(next, st.phase);
+    },
+
+    /** بلاغ عن الكلمة على جهاز الشارح بس: يوصل للأدمن، والكلمة تتبدّل.
+        الكلمة الجديدة ما تنرسل لأحد، وما يستهلك التخطي */
+    async reportWord({ reason, details }) {
+      if (!st || st.explainerId !== me.id || !["reveal", "play"].includes(st.phase) || reportsLeft() <= 0) return;
+      const key = `${code}:${st.gameId}:${st.round}`;
+      const prev = sGet(WORD_KEY) || {};
+      const bad = myWord();
+      const next = Words.pick(st.settings.categories, [...(st.usedWords || []), bad.id]);
+      Words.markUsed(next.id);
+      sSet(WORD_KEY, { key, word: next, skipped: !!prev.skipped, reports: (prev.reports || 0) + 1 });
+      UI.setReport(true, reportsLeft());
+      UI.swapWord(next, st.phase);
+      const r = await WB.Reports.send({ word: bad, reason, details, reporter: me.name, roomCode: code });
+      UI.toast(r.sent || r.duplicate ? "وصل البلاغ، شكراً! وتبدّلت الكلمة" : "ما قدرنا نرسل البلاغ، بس ما راح تطلع لك هالكلمة مرة ثانية");
     },
     startTimer() { if (st && st.phase === "reveal") act({ act: "start" }); },
     verdict(got) {

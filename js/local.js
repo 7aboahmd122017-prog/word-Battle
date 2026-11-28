@@ -34,12 +34,14 @@ WB.Local = (() => {
       case "reveal":
         UI.renderReveal(word);
         UI.setSkip(true, !s.skipUsed);
+        UI.setReport(true, reportsLeft());
         UI.show("reveal");
         break;
       case "play":
       case "steal":
         UI.renderPlay({ state: s, word });
         UI.setSkip(s.phase === "play", !s.skipUsed);
+        UI.setReport(s.phase === "play", reportsLeft());
         UI.show("play");
         UI.Timer.start(s.endsAt, s.timerTotal, onTimeUp);
         if (s.phase === "steal" && s.timeUp) UI.stealOver();
@@ -56,6 +58,9 @@ WB.Local = (() => {
         break;
     }
   }
+
+  const MAX_REPORTS = 3; // بلاغات الشارح في الدور الواحد
+  const reportsLeft = () => MAX_REPORTS - ((s && s.reportsUsed) || 0);
 
   /** خلص وقت الشرح ← يبدأ وقت السرقة. خلص وقت السرقة ← الشارح يحدد */
   function onTimeUp() {
@@ -230,6 +235,21 @@ WB.Local = (() => {
     },
 
     /** تخطي واحد للشارح في دوره: كلمة جديدة والوقت يكمل */
+    /** بلاغ عن الكلمة الحالية: يوصل للأدمن، والكلمة تتبدّل (ما يستهلك التخطي) */
+    async reportWord({ reason, details }) {
+      if (!s || !word || reportsLeft() <= 0 || !["reveal", "play"].includes(s.phase)) return;
+      const bad = word;
+      const ex = Engine.explainer(s);
+      word = Words.pick(s.settings.categories, [...s.usedWords, bad.id]);
+      Words.markUsed(word.id);
+      s.reportsUsed = (s.reportsUsed || 0) + 1;
+      save();
+      UI.setReport(true, reportsLeft());
+      UI.swapWord(word, s.phase);
+      const r = await WB.Reports.send({ word: bad, reason, details, reporter: ex ? ex.name : "" });
+      UI.toast(r.sent || r.duplicate ? "وصل البلاغ، شكراً! وتبدّلت الكلمة" : "ما قدرنا نرسل البلاغ، بس ما راح تطلع لك هالكلمة مرة ثانية");
+    },
+
     skipWord() {
       if (!s || !word || s.skipUsed || !["reveal", "play"].includes(s.phase)) return;
       const next = Words.pick(s.settings.categories, [...s.usedWords, word.id]);

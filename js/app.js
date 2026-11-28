@@ -199,6 +199,11 @@ WB.App = (() => {
     "go-rules": () => UI.show("rules"),
     "shuffle-teams": () => Local.shuffleTeams(),
     "skip-word": () => ctrl && ctrl.skipWord && ctrl.skipWord(),
+    "report-word": async () => {
+      if (!ctrl || !ctrl.reportWord) return;
+      const res = await UI.openReport();
+      if (res && ctrl) ctrl.reportWord(res);
+    },
     "go-setup": () => { ctrl = Local; Local.openSetup(); },
     "go-online": () => { ctrl = Online; Online.openEntry(); },
     "start-local": () => { ctrl = Local; Local.start(); },
@@ -326,6 +331,7 @@ WB.App = (() => {
     document.addEventListener("keydown", (e) => {
       if (e.key !== "Escape") return;
       if (!UI.$("#modal").hidden) UI.$("#modalCancel").click();
+      else if (!UI.$("#reportModal").hidden) UI.$("#reportCancel").click();
       else if (!UI.$("#shareModal").hidden) closeShare();
     });
     UI.$("#shareModal").addEventListener("click", (e) => { if (e.target.id === "shareModal") closeShare(); });

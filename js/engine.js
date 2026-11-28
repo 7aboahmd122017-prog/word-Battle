@@ -57,6 +57,7 @@ WB.Engine = (() => {
     s.endsAt = null;
     s.timeUp = false;
     s.skipUsed = false; // كل شارح معه تخطي واحد في دوره
+    s.reportsUsed = 0;  // و٣ بلاغات عن كلمات فيها غلط
   }
 
   function startTimer(s, now = Date.now()) {

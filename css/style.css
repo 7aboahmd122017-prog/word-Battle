@@ -249,6 +249,21 @@ p { margin: 0; }
 .btn-award.b { --tc: var(--team-b); }
 .btn-award .dot { width: 12px; height: 12px; border-radius: 4px; transform: rotate(45deg); background: var(--tc); }
 
+/* أدوات تحت الكرت: تخطي + بلاغ */
+.card-tools { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 4px; }
+.card-tools .skip-btn { margin: 0; }
+.report-btn { --b-fg: #ffb3bb; border-color: rgba(255,107,122,0.3); }
+
+/* نافذة البلاغ */
+.report-reasons .chip { font-size: 0.88rem; }
+.report-field { padding: 6px 0 0; position: relative; }
+.report-field textarea {
+  width: 100%; resize: vertical; min-height: 76px; padding: 10px 12px; font: inherit; color: var(--text);
+  background: var(--bg-2); border: 1px solid var(--line-2); border-radius: var(--r); outline: none;
+}
+.report-field textarea:focus { border-color: var(--violet); box-shadow: 0 0 0 3px rgba(143,123,255,0.18); }
+.report-count { justify-self: end; }
+
 /* زر تخطي الكلمة */
 .skip-btn { justify-self: center; margin: 4px auto 0; display: flex; }
 .skip-btn:disabled { opacity: 0.5; }
