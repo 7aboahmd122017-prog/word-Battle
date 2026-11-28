@@ -54,6 +54,23 @@ WB.App = (() => {
     }, 480);
   }
 
+  /** بعد الوقت: الشارح يحدد النقطة لمين، مع نفس حركة الكرت */
+  function award(who) {
+    if (!ctrl || !ctrl.award || judging) return;
+    judging = true;
+    UI.$$("#stealVerdict .btn").forEach((b) => (b.disabled = true));
+    const card = UI.$("#playCard");
+    card.classList.add("shown", who === "none" ? "shake" : "fly");
+    if (who !== "none") {
+      const r = card.getBoundingClientRect();
+      UI.sparks(r.left + r.width / 2, r.top + r.height / 2);
+    }
+    setTimeout(() => {
+      judging = false;
+      ctrl && ctrl.award(who);
+    }, 480);
+  }
+
   /* ===== سحب كرت الكلمة: لفوق جابوها، لتحت ما جابوها ===== */
   function bindSwipe() {
     const card = UI.$("#playCard");
@@ -61,7 +78,8 @@ WB.App = (() => {
     let start = null;
 
     card.addEventListener("pointerdown", (e) => {
-      if (judging || UI.$("#playExplainer").hidden) return;
+      // السحب للنتيجة بس وقت الشرح؛ وقت السرقة الشارح يختار من الأزرار
+      if (judging || UI.$("#playExplainer").hidden || !UI.$("#stealVerdict").hidden) return;
       start = { x: e.clientX, y: e.clientY, moved: false };
       card.setPointerCapture(e.pointerId);
       card.classList.add("dragging");
@@ -192,10 +210,9 @@ WB.App = (() => {
     "miss": () => verdict(false),
     "next": () => ctrl && ctrl.next(),
     "rematch": () => ctrl && ctrl.rematch(),
-    "skip-turn": async () => {
-      if (!ctrl || ctrl.kind !== "online") return;
-      if (await UI.confirm("تخطي الدور؟", "بيتم اختيار شارح ثاني من نفس الفريق بدون نقطة.", "تخطي")) ctrl.skip();
-    },
+    "award-own": () => award("own"),
+    "award-other": () => award("other"),
+    "award-none": () => award("none"),
     "online-create": () => Online.create(),
     "online-join": () => Online.join(),
     "online-start": () => Online.start(),
@@ -289,6 +306,10 @@ WB.App = (() => {
       codeInput.value = codeInput.value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 5);
     });
     codeInput.addEventListener("keydown", (e) => { if (e.key === "Enter") Online.join(); });
+    // في الدخول السريع (من QR): Enter بعد كتابة الاسم يدخل الغرفة على طول
+    UI.$("#onName").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && !UI.$("#quickJoinBtn").hidden) Online.join();
+    });
 
     // تحديث العناصر عند تغيّر أي إعداد
     Store.onChange((key) => {

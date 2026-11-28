@@ -214,6 +214,40 @@ p { margin: 0; }
 .home-tag { color: var(--muted); text-align: center; max-width: 30ch; font-size: 1.02rem; }
 .home-actions { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; }
 
+/* دخول سريع من QR */
+.quick-join { display: grid; justify-items: center; gap: 8px; padding: 18px 0 6px; animation: popBig 0.45s var(--ease); }
+.quick-code { pointer-events: none; }
+
+/* وقت السرقة */
+.steal-banner {
+  --tc: var(--team-b);
+  display: grid; justify-items: center; gap: 2px; text-align: center;
+  padding: 12px 16px; border-radius: var(--r-lg);
+  background: color-mix(in srgb, var(--tc) 14%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--tc) 45%, transparent);
+  animation: popBig 0.45s var(--ease);
+}
+.steal-banner.a { --tc: var(--team-a); }
+.steal-banner b { font-family: var(--font-art); font-weight: 400; font-size: 1.5rem; color: var(--tc); }
+.steal-banner span { font-weight: 600; }
+.play.stealing { gap: 12px; justify-content: flex-start; }
+.play.stealing .timer { width: min(132px, 36vw); }
+.play.stealing .timer-num b { font-size: 2.6rem; }
+.play.stealing .flip-sm { min-height: 110px; }
+.play.stealing .flip-sm .flip-back i { font-size: 2.6rem; }
+.steal-verdict { display: grid; gap: 10px; margin-top: 14px; }
+.play.stealing .steal-verdict { margin-top: 4px; gap: 8px; }
+.play.stealing .btn-award { min-height: 52px; }
+.steal-q { text-align: center; font-weight: 600; color: var(--muted); }
+.btn-award {
+  --tc: var(--team-a);
+  min-height: 60px; font-size: 1.08rem; border-radius: 18px;
+  --b-bg: color-mix(in srgb, var(--tc) 18%, var(--surface));
+  border-color: color-mix(in srgb, var(--tc) 50%, transparent);
+}
+.btn-award.b { --tc: var(--team-b); }
+.btn-award .dot { width: 12px; height: 12px; border-radius: 4px; transform: rotate(45deg); background: var(--tc); }
+
 /* زر تخطي الكلمة */
 .skip-btn { justify-self: center; margin: 4px auto 0; display: flex; }
 .skip-btn:disabled { opacity: 0.5; }

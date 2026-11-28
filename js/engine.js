@@ -74,13 +74,27 @@ WB.Engine = (() => {
     return null;
   }
 
-  /** word: {id, text, catName} */
-  function record(s, got, word) {
-    const team = s.teams[s.turnTeam];
-    if (got) team.score += 1;
+  // بعد ما يخلص وقت الشرح (أو ما جابوها): الفريق الثاني عنده ٢٠ ثانية يسرق الكلمة
+  const STEAL_MS = 20000;
+
+  function startSteal(s, now = Date.now()) {
+    s.phase = "steal";
+    s.timeUp = false;
+    s.timerTotal = STEAL_MS;
+    s.endsAt = now + STEAL_MS;
+  }
+
+  /** الشارح يحدد النقطة لمين.
+      to: رقم الفريق اللي ياخذ النقطة، أو null إذا ما أحد جابها.
+      word: {id, text, catName} */
+  function record(s, to, word) {
+    const winnerTeam = to === 0 || to === 1 ? to : null;
+    if (winnerTeam !== null) s.teams[winnerTeam].score += 1;
     const ex = explainer(s);
     s.lastResult = {
-      got,
+      to: winnerTeam,
+      got: winnerTeam === s.turnTeam,
+      stolen: winnerTeam !== null && winnerTeam !== s.turnTeam,
       team: s.turnTeam,
       word: word ? word.text : "",
       catName: word ? word.catName : "",
@@ -89,8 +103,8 @@ WB.Engine = (() => {
     };
     if (word && word.id && !s.usedWords.includes(word.id)) s.usedWords.push(word.id);
     s.endsAt = null;
-    if (team.score >= s.settings.target) {
-      s.winner = s.turnTeam;
+    if (winnerTeam !== null && s.teams[winnerTeam].score >= s.settings.target) {
+      s.winner = winnerTeam;
       s.phase = "win";
     } else {
       s.phase = "result";
@@ -118,5 +132,5 @@ WB.Engine = (() => {
     beginTurn(s);
   }
 
-  return { uid, shuffle, create, beginTurn, startTimer, explainer, record, next, checkWin, rematch };
+  return { uid, shuffle, create, beginTurn, startTimer, startSteal, explainer, record, next, checkWin, rematch, STEAL_MS };
 })();

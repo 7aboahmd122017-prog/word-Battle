@@ -112,7 +112,7 @@
           </li>
           <li>
             <b>٥</b>
-            <div><h3>سجّلوا النتيجة</h3><p>جابوها؟ اضغط «جابوها» أو اسحب الكرت لفوق، ويحصل فريقك على نقطة. ما جابوها؟ اسحبه لتحت. وبعدها الدور ينتقل للفريق الثاني.</p></div>
+            <div><h3>جابوها أو سرقوها</h3><p>جابوها قبل الوقت؟ اضغط «جابوها» أو اسحب الكرت لفوق، ويحصل فريقك على نقطة. إذا خلص الوقت أو ضغطت «ما جابوها»، الفريق الثاني عنده <b>٢٠ ثانية يسرقونها</b>. بعدها الشارح يحدد النقطة لمين: لفريقه، أو للي سرقوها، أو ولا أحد. وبعدها الدور ينتقل للفريق الثاني.</p></div>
           </li>
         </ol>
 
@@ -243,13 +243,19 @@
 
         <!-- نموذج الدخول -->
         <div id="onlineEntry">
+          <!-- دخول سريع لما يجي اللاعب من QR أو رابط غرفة -->
+          <div class="quick-join" id="quickJoin" hidden>
+            <span class="label">انعزمت على غرفة</span>
+            <b class="code-big quick-code" id="quickCode">-----</b>
+          </div>
           <div class="panel">
             <label class="field">
               <span class="label">اسمك</span>
-              <input id="onName" type="text" maxlength="16" placeholder="مثلاً: أبو فهد" autocomplete="nickname" />
+              <input id="onName" type="text" maxlength="16" placeholder="مثلاً: أبو فهد" autocomplete="nickname" enterkeyhint="go" />
             </label>
           </div>
-          <div class="entry-split">
+          <button class="btn btn-primary btn-xl" id="quickJoinBtn" data-action="online-join" hidden>ادخل الغرفة</button>
+          <div class="entry-split" id="entrySplit">
             <div class="panel entry-card">
               <h3>سوّ غرفة جديدة</h3>
               <p class="muted">بتكون أنت المضيف وتتحكم بالإعدادات.</p>
@@ -310,6 +316,10 @@
       <!-- 6. اللعب والمؤقت -->
       <section class="screen" data-screen="play">
         <div class="play">
+          <div class="steal-banner" id="stealBanner" hidden>
+            <b>خلص الوقت!</b>
+            <span id="stealText"></span>
+          </div>
           <div class="timer" id="timer">
             <svg viewBox="0 0 120 120" class="timer-ring" aria-hidden="true">
               <circle cx="60" cy="60" r="54" class="ring-bg"/>
@@ -327,18 +337,24 @@
                 </div>
               </div>
             </div>
-            <p class="swipe-hint">الكرت مخفي عن الحاضرين. اضغطه إذا تبي تشوف كلمتك.<br />اسحبه لفوق إذا جابوها، ولتحت إذا ما جابوها.</p>
+            <p class="swipe-hint" id="swipeHint">الكرت مخفي عن الحاضرين. اضغطه إذا تبي تشوف كلمتك.<br />اسحبه لفوق إذا جابوها، ولتحت إذا ما جابوها.</p>
             <button type="button" class="btn btn-ghost btn-sm skip-btn" data-action="skip-word" hidden><svg><use href="#i-shuffle"/></svg><span>صعبة؟ تخطّاها</span></button>
-            <p class="timeup-msg" id="timeupMsg" hidden>خلص الوقت! جابوها ولا لا؟</p>
-            <div class="verdict">
+            <p class="timeup-msg" id="timeupMsg" hidden></p>
+            <div class="verdict" id="playVerdict">
               <button class="btn btn-got" data-action="got"><svg><use href="#i-check"/></svg>جابوها</button>
               <button class="btn btn-miss" data-action="miss"><svg><use href="#i-x"/></svg>ما جابوها</button>
+            </div>
+            <!-- بعد ما يخلص الوقت: الشارح يحدد النقطة لمين -->
+            <div class="steal-verdict" id="stealVerdict" hidden>
+              <p class="steal-q">النقطة لمين؟</p>
+              <button class="btn btn-award own" data-action="award-own"><span class="dot"></span><span id="awardOwn">فريقي</span></button>
+              <button class="btn btn-award other" data-action="award-other"><span class="dot"></span><span id="awardOther">الفريق الثاني</span></button>
+              <button class="btn btn-ghost" data-action="award-none">ولا أحد جابها</button>
             </div>
           </div>
           <div id="playWatcher" hidden>
             <p class="watch-title" id="watchTitle"></p>
             <p class="muted center" id="watchSub"></p>
-            <button class="btn btn-ghost btn-sm" id="hostSkip" data-action="skip-turn" hidden><svg><use href="#i-shuffle"/></svg>تخطي الدور</button>
           </div>
         </div>
       </section>

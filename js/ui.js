@@ -95,11 +95,10 @@ WB.UI = (() => {
         <div class="handoff-avatar ${teamClass(ti)}">${esc(initial(name))}</div>
         <div>
           <p class="who">${esc(name)}</p>
-          <p class="muted">${reading ? "الكلمة عند الشارح الحين" : "صار الشارح بهالدور"} <span class="dots"><i></i><i></i><i></i></span></p>
+          <p class="muted">${reading ? "الكلمة عند الشارح الحين" : "على الشرح بهالدور"} <span class="dots"><i></i><i></i><i></i></span></p>
         </div>
-        <p class="hint">${v.myTeam === ti ? "جهّز نفسك، أنت من فريقه وبتخمّن!" : v.myTeam === 1 - ti ? "فريقك يتفرج هالدور. ركّز وانتبه لا يقول الكلمة!" : ""}</p>
-        ${v.offlineNote ? `<p class="banner">${esc(v.offlineNote)}</p>` : ""}
-        ${v.canSkip ? `<button class="btn btn-ghost" data-action="skip-turn">${icon("shuffle")}تخطي واختيار شارح ثاني</button>` : ""}`;
+        <p class="hint">${v.myTeam === ti ? "جهّز نفسك، أنت من فريقه وبتخمّن!" : v.myTeam === 1 - ti ? "ركّز! إذا خلص الوقت وما جابوها، عندكم ٢٠ ثانية تسرقونها." : ""}</p>
+        ${v.offlineNote ? `<p class="banner">${esc(v.offlineNote)}</p>` : ""}`;
     }
     $("#turnView").innerHTML = html;
     rollExplainer(s, team, name);
@@ -312,22 +311,58 @@ WB.UI = (() => {
     return { start, stop };
   })();
 
+  /** شاشة اللعب. فيها مرحلتين:
+      play  = الشارح يشرح لفريقه
+      steal = خلص الوقت، والفريق الثاني عنده ٢٠ ثانية يسرق، والشارح يحدد النقطة لمين */
   function renderPlay(v) {
     const s = v.state;
+    const stealing = s.phase === "steal";
+    const own = s.turnTeam;
+    const other = 1 - own;
+
+    // شريط السرقة يظهر للكل
+    const banner = $("#stealBanner");
+    banner.hidden = !stealing;
+    $(".play").classList.toggle("stealing", stealing); // نصغّر المؤقت والكرت عشان الأزرار تبان
+    banner.classList.toggle("a", other === 0);
+    $("#stealText").textContent = `فريق ${s.teams[other].name}: عندكم ٢٠ ثانية تسرقونها!`;
+
     $("#playExplainer").hidden = !v.word;
     $("#playWatcher").hidden = !!v.word;
-    $("#timeupMsg").hidden = !s.timeUp;
+    $("#timeupMsg").hidden = true;
     if (v.word) {
       // دور جديد = كرت مخفي. نفس الدور = نرجّع الكرت مثل ما تركه الشارح
       const key = `${s.gameId || ""}:${s.round}:${v.word.id}`;
       if (playCard.key !== key) playCard = { key, shown: false };
       fillWord($("#playCard"), $("#playCat"), $("#playWord"), v.word, playCard.shown);
-      $$(".verdict .btn").forEach((b) => (b.disabled = false));
+      $("#playVerdict").hidden = stealing;
+      $("#stealVerdict").hidden = !stealing;
+      $("#swipeHint").hidden = stealing;
+      $("#awardOwn").textContent = `فريقي (${s.teams[own].name})`;
+      $("#awardOther").textContent = `سرقها فريق ${s.teams[other].name}`;
+      $('[data-action="award-own"]').className = `btn btn-award ${teamClass(own)}`;
+      $('[data-action="award-other"]').className = `btn btn-award ${teamClass(other)}`;
+      $$("#playExplainer .verdict .btn, #stealVerdict .btn").forEach((b) => (b.disabled = false));
     } else {
       const ex = WB.Engine.explainer(s);
-      $("#watchTitle").textContent = `${ex ? ex.name : "الشارح"} على الشرح الحين`;
-      $("#watchSub").textContent = v.myTeam === s.turnTeam ? "خمّن بصوت عالي! الكلمة عند الشارح بس." : `دور فريق ${s.teams[s.turnTeam].name}. انتظر دورك.`;
+      const name = ex ? ex.name : "الشارح";
+      if (stealing) {
+        $("#watchTitle").textContent = v.myTeam === other ? "يلا اسرقوها!" : "الفريق الثاني يحاول يسرقها";
+        $("#watchSub").textContent = `بعدها القرار عند ${name}: النقطة لمين.`;
+      } else {
+        $("#watchTitle").textContent = `${name} على الشرح الحين`;
+        $("#watchSub").textContent = v.myTeam === s.turnTeam
+          ? "خمّن بصوت عالي! الكلمة عند الشارح بس."
+          : `دور فريق ${s.teams[s.turnTeam].name}. ركّزوا، إذا خلص الوقت ممكن تسرقونها.`;
+      }
     }
+  }
+
+  /** رسالة تحت الكرت لما يخلص وقت السرقة */
+  function stealOver() {
+    const m = $("#timeupMsg");
+    m.textContent = "خلص وقت السرقة! حدد النقطة لمين.";
+    m.hidden = false;
   }
 
   /* ===== لوحة النقاط ===== */
@@ -345,24 +380,32 @@ WB.UI = (() => {
     const s = v.state;
     const r = s.lastResult || {};
     const nextTeam = s.teams[1 - s.turnTeam];
+    // لمين راحت النقطة؟ (النتائج القديمة ما فيها to، فنرجع لـ got)
+    const to = r.to === 0 || r.to === 1 ? r.to : r.got ? r.team : null;
+    const scored = to !== null;
+    const title = !scored
+      ? "ما أحد جابها هالمرة"
+      : r.stolen
+        ? `سرقها فريق ${esc(s.teams[to].name)}! +١`
+        : `جابوها! +١ لـ ${esc(s.teams[to].name)}`;
     $("#resultView").innerHTML = `
       <div class="verdict-badge">
-        <div class="verdict-icon ${r.got ? "got" : "miss"}">${icon(r.got ? "check" : "x")}</div>
-        <h2>${r.got ? `جابوها! +١ لـ ${esc(s.teams[r.team].name)}` : "ما جابوها هالمرة"}</h2>
+        <div class="verdict-icon ${scored ? "got" : "miss"}">${icon(scored ? "check" : "x")}</div>
+        <h2>${title}</h2>
         ${r.word ? `<p class="was">الكلمة كانت: <b>${esc(r.word)}</b></p>` : ""}
       </div>
-      ${scoreboardHTML(s, r.got ? r.team : null)}
+      ${scoreboardHTML(s, to)}
       <p class="next-up">الدور الجاي لفريق <b>${esc(nextTeam.name)}</b></p>
       ${v.canNext
         ? `<button class="btn btn-primary btn-xl" data-action="next">الدور الجاي</button>`
         : `<p class="muted center">${esc(v.waitText || "")} <span class="dots"><i></i><i></i><i></i></span></p>`}`;
     // العدّاد يرتفع قدام اللاعبين
-    if (r.got) {
-      const num = $(`#resultView .score-card.${teamClass(r.team)} .sc-num`);
+    if (scored) {
+      const num = $(`#resultView .score-card.${teamClass(to)} .sc-num`);
       if (num) {
-        num.textContent = s.teams[r.team].score - 1;
+        num.textContent = s.teams[to].score - 1;
         num.classList.remove("bump");
-        setTimeout(() => { num.textContent = s.teams[r.team].score; num.classList.add("bump"); }, 450);
+        setTimeout(() => { num.textContent = s.teams[to].score; num.classList.add("bump"); }, 450);
       }
     }
   }
@@ -428,6 +471,6 @@ WB.UI = (() => {
     show, current: () => current, previous: () => previous,
     updateBar, renderSteppers, renderCategoryChips, syncSettingsScreen,
     renderTurn, renderReveal, renderPlay, renderResult, renderWin, scoreboardHTML,
-    Timer, confirm, toast, sparks, setSkip, swapWord
+    Timer, confirm, toast, sparks, setSkip, swapWord, stealOver
   };
 })();

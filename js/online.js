@@ -23,7 +23,7 @@ WB.Online = (() => {
   let roster = [];        // المتصلون حالياً
   let st = null;          // آخر حالة
   let localEndsAt = null;
-  let joinTimer = null, helloTimer = null, healTimer = null, nameTimer = null;
+  let joinTimer = null, helloTimer = null, healTimer = null, nameTimer = null, tickTimer = null;
   let lastKey = "";
   let lastFx = "";
   let timeUpShown = false;
@@ -69,6 +69,32 @@ WB.Online = (() => {
   }
   const smaller = (sizes) => (sizes[1] < sizes[0] ? 1 : 0);
 
+  const cleanWord = (w) => (w
+    ? { id: String(w.id || ""), text: String(w.text || "").slice(0, 80), catName: String(w.catName || "").slice(0, 30) }
+    : null);
+
+  // إذا انقطع اتصال الشارح هالمدة، الدور ينتقل لغيره من نفس الفريق تلقائياً
+  // (ما فيه أحد عنده صلاحية يتخطى الشارح بيده)
+  const OFFLINE_SKIP_MS = 15000;
+  let offlineSince = null;
+
+  /** فحص دوري عند المضيف: انتهاء الوقت، والشارح المنقطع */
+  function hostTick() {
+    const s = st;
+    if (!isHost() || !s || !s.teams) return;
+    const now = Date.now();
+    // الوقت خلص ومحد بلّغ (مثلاً جوال الشارح بالخلفية): نبدأ السرقة
+    if (s.phase === "play" && s.endsAt && now > s.endsAt + 1500) { Engine.startSteal(s, now); commit(); return; }
+    const ex = Engine.explainer(s);
+    const live = ["turn", "reveal", "play", "steal"].includes(s.phase);
+    if (live && ex && ex.off) {
+      if (!offlineSince || offlineSince.id !== ex.id || offlineSince.round !== s.round) offlineSince = { id: ex.id, round: s.round, at: now };
+      else if (now - offlineSince.at > OFFLINE_SKIP_MS) { offlineSince = null; Engine.beginTurn(s); commit(); }
+    } else {
+      offlineSince = null;
+    }
+  }
+
   function hostAction(from, a) {
     const s = st;
     if (!s || !s.teams) return;
@@ -81,17 +107,26 @@ WB.Online = (() => {
         if (s.phase === "reveal" && isEx) { Engine.startTimer(s); commit(); }
         break;
       case "verdict":
+        // أثناء الشرح: جابوها = نقطة لفريق الشارح. ما جابوها = يبدأ وقت السرقة
         if (s.phase === "play" && isEx) {
-          const w = a.word ? { id: String(a.word.id || ""), text: String(a.word.text || "").slice(0, 80), catName: String(a.word.catName || "").slice(0, 30) } : null;
-          Engine.record(s, !!a.got, w);
+          if (a.got) { Engine.record(s, s.turnTeam, cleanWord(a.word)); commit(); }
+          else { Engine.startSteal(s); commit(); }
+        }
+        break;
+      case "timeup":
+        // جهاز الشارح يبلغ إن الوقت خلص (والمضيف يتأكد بنفسه بعد في hostTick)
+        if (s.phase === "play" && isEx) { Engine.startSteal(s); commit(); }
+        break;
+      case "award":
+        // الشارح يحدد النقطة لمين بعد الوقت
+        if (["play", "steal"].includes(s.phase) && isEx) {
+          const to = a.who === "own" ? s.turnTeam : a.who === "other" ? 1 - s.turnTeam : null;
+          Engine.record(s, to, cleanWord(a.word));
           commit();
         }
         break;
       case "next":
         if (s.phase === "result" && (from === me.id || (s.lastResult && s.lastResult.explainerId === from))) { Engine.next(s); commit(); }
-        break;
-      case "skip":
-        if (from === me.id && ["turn", "reveal", "play"].includes(s.phase)) { Engine.beginTurn(s); commit(); }
         break;
       case "rematch":
         if (from === me.id && s.phase === "win") { Engine.rematch(s); s.gameId = Engine.uid(); commit(); }
@@ -160,10 +195,12 @@ WB.Online = (() => {
     render();
   }
 
-  /** اختيار الفريق الأقل عدداً للاعب الجديد — بعد ما نعرف مين موجود في الغرفة */
-  function autoTeam() {
-    if (me.team === 0 || me.team === 1) return false;
-    if (!isHost() && (!st || !roster.some((r) => r.host))) return false;
+  /** اختيار الفريق الأقل عدداً للاعب الجديد — بعد ما نعرف مين موجود في الغرفة.
+      إذا دخل كذا واحد بنفس اللحظة (مثلاً كلهم صوّروا الـ QR سوا) كل واحد يشوف نفس الأعداد
+      ويختار نفس الفريق؛ عشان كذا اللاعب ينتظر لحظة عشوائية قصيرة ثم يحسب من جديد. */
+  let teamPick = null;
+  function assignTeam() {
+    if (!tx || me.team === 0 || me.team === 1) return;
     const others = roster.filter((r) => r.id !== me.id);
     const sizes = st && st.teams
       ? teamSizes(true)
@@ -171,7 +208,15 @@ WB.Online = (() => {
     me.team = smaller(sizes);
     saveRoom();
     tx.track(me);
-    return true;
+  }
+  function autoTeam() {
+    if (me.team === 0 || me.team === 1) return false;
+    if (isHost()) { assignTeam(); return true; }
+    if (!st || !roster.some((r) => r.host)) return false;
+    if (!teamPick) {
+      teamPick = setTimeout(() => { teamPick = null; assignTeam(); }, 300 + Math.random() * 1700);
+    }
+    return false;
   }
 
   function act(a) {
@@ -214,7 +259,11 @@ WB.Online = (() => {
     const amEx = st.explainerId === me.id;
     if (st.phase === "turn" && amEx) { Sound.play("reveal"); Sound.vibrate([60, 50, 60]); }
     if (st.phase === "play") { Sound.play("start"); Sound.vibrate(60); }
-    if (st.phase === "result" && st.lastResult) Sound.play(st.lastResult.got ? "got" : "miss");
+    if (st.phase === "steal") { Sound.play("timeUp"); Sound.vibrate([220, 90, 220]); }
+    if (st.phase === "result" && st.lastResult) {
+      const r = st.lastResult;
+      Sound.play(r.to === 0 || r.to === 1 || r.got ? "got" : "miss");
+    }
     if (st.phase === "win") { Sound.play("win"); Sound.vibrate([100, 60, 100, 60, 300]); }
   }
 
@@ -253,16 +302,17 @@ WB.Online = (() => {
           UI.show("turn");
         } else {
           UI.renderTurn({
-            state: st, role: "other", myTeam: me.team, canSkip: isHost(),
-            offlineNote: ex && ex.off ? "الشارح غير متصل حالياً. المضيف يقدر يتخطى الدور." : ""
+            state: st, role: "other", myTeam: me.team,
+            offlineNote: ex && ex.off ? "الشارح انقطع اتصاله. إذا ما رجع خلال ١٥ ثانية، الدور ينتقل لغيره تلقائياً." : ""
           });
           UI.show("turn");
         }
         break;
       case "play":
-        UI.renderPlay({ state: { ...st, timeUp: timeUpShown && amEx }, word: amEx ? myWord() : null, myTeam: me.team });
-        UI.$("#hostSkip").hidden = !(isHost() && !amEx);
-        UI.setSkip(amEx, amEx && !skipUsed());
+      case "steal":
+        timeUpShown = false;
+        UI.renderPlay({ state: st, word: amEx ? myWord() : null, myTeam: me.team });
+        UI.setSkip(amEx && st.phase === "play", amEx && !skipUsed());
         UI.show("play");
         UI.Timer.start(localEndsAt || Date.now(), st.timerTotal || st.settings.roundTime * 1000, onTimeUp);
         break;
@@ -281,13 +331,21 @@ WB.Online = (() => {
     }
   }
 
+  /** خلص الوقت على هالجهاز:
+      وقت الشرح ← جهاز الشارح يبلّغ المضيف عشان يبدأ وقت السرقة
+      وقت السرقة ← الشارح يحدد النقطة، والباقين ينتظرون */
   function onTimeUp() {
-    if (!st || st.phase !== "play" || timeUpShown) return;
+    if (!st || timeUpShown) return;
     timeUpShown = true;
-    if (st.explainerId === me.id) UI.$("#timeupMsg").hidden = false;
-    else UI.$("#watchSub").textContent = "خلص الوقت! بانتظار الشارح يسجّل النتيجة.";
-    Sound.play("timeUp");
-    Sound.vibrate([220, 90, 220]);
+    const amEx = st.explainerId === me.id;
+    if (st.phase === "play") {
+      if (amEx) act({ act: "timeup" });
+    } else if (st.phase === "steal") {
+      if (amEx) UI.stealOver();
+      else UI.$("#watchSub").textContent = "خلص وقت السرقة! بانتظار الشارح يحدد النقطة لمين.";
+      Sound.play("timeUp");
+      Sound.vibrate([220, 90, 220]);
+    }
   }
 
   function renderLobby() {
@@ -360,22 +418,34 @@ WB.Online = (() => {
     clearInterval(healTimer);
     // المضيف يعيد بث الحالة دورياً لتعويض أي رسالة ضايعة
     healTimer = setInterval(() => { if (isHost()) broadcast(); }, 4000);
+    clearInterval(tickTimer);
+    tickTimer = setInterval(hostTick, 1000);
   }
 
   function resetLocal() {
-    clearTimeout(joinTimer); clearInterval(helloTimer); clearInterval(healTimer); clearTimeout(nameTimer);
-    joinTimer = helloTimer = healTimer = null;
+    clearTimeout(joinTimer); clearInterval(helloTimer); clearInterval(healTimer); clearInterval(tickTimer); clearTimeout(nameTimer); clearTimeout(teamPick);
+    joinTimer = helloTimer = healTimer = tickTimer = teamPick = null;
     UI.Timer.stop();
     if (tx) tx.leave();
     tx = null; st = null; roster = []; code = null; lastKey = ""; lastFx = "";
     UI.$("#netBanner").hidden = true;
   }
 
+  // رمز الغرفة إذا اللاعب جا من QR أو رابط: نعرض له الدخول بس بدون «إنشاء غرفة»
+  let quickCode = "";
+
   function showEntry(err = "") {
     UI.$("#onlineEntry").hidden = false;
     UI.$("#onlineLobby").hidden = true;
-    UI.$("#onlineTitle").textContent = "اللعب من الجوالات";
+    UI.$("#onlineTitle").textContent = quickCode ? "ادخل الغرفة" : "اللعب من الجوالات";
     UI.$("#onlineError").textContent = err;
+    UI.$("#quickJoin").hidden = !quickCode;
+    UI.$("#quickJoinBtn").hidden = !quickCode;
+    UI.$("#entrySplit").hidden = !!quickCode;
+    if (quickCode) {
+      UI.$("#quickCode").textContent = quickCode;
+      UI.$("#onCode").value = quickCode;
+    }
     const n = UI.$("#onlineNotice");
     if (!Transport.configured()) {
       n.hidden = false;
@@ -445,6 +515,7 @@ WB.Online = (() => {
 
     openEntry() {
       if (connected() && st) { render(); return; }
+      quickCode = ""; // جا من شاشة الطريقة: يشوف الخيارين (إنشاء ودخول)
       showEntry();
     },
 
@@ -467,12 +538,12 @@ WB.Online = (() => {
     rejoinCode: () => (sGet(ROOM_KEY) || {}).code || "",
 
     /** فتح شاشة الدخول والرمز معبّى (من رابط أو QR) */
+    /** جا من QR أو رابط غرفة: اسمه وزر الدخول بس */
     openWithCode(c) {
+      quickCode = c;
       showEntry();
-      UI.$("#onCode").value = c;
       const name = UI.$("#onName");
       if (!name.value.trim()) name.focus();
-      UI.toast("عبّينا لك رمز الغرفة، اكتب اسمك واضغط دخول");
     },
     async rejoin() {
       const r = sGet(ROOM_KEY);
@@ -535,9 +606,13 @@ WB.Online = (() => {
       UI.$$(".verdict .btn").forEach((b) => (b.disabled = true));
       act({ act: "verdict", got, word: myWord() });
     },
+    /** بعد الوقت: الشارح يحدد النقطة لمين ("own" أو "other" أو "none") */
+    award(who) {
+      if (!st || !["play", "steal"].includes(st.phase) || st.explainerId !== me.id) return;
+      act({ act: "award", who, word: myWord() });
+    },
     next() { act({ act: "next" }); },
     rematch() { act({ act: "rematch" }); },
-    skip() { act({ act: "skip" }); },
 
     applySetting(key) {
       if (!isHost() || !st || !["roundTime", "target", "categories"].includes(key)) return;
@@ -551,6 +626,13 @@ WB.Online = (() => {
     inGame: () => connected() && !!st,
     connected,
     code: () => code,
+    /** للتشخيص من الكونسول: مين متصل حسب المضيف، وحالة لاعبي المباراة */
+    debug: () => ({
+      me, roster: roster.map((r) => ({ id: r.id, name: r.name, team: r.team, host: r.host })),
+      phase: st && st.phase, explainerId: st && st.explainerId,
+      players: st && st.teams ? st.teams.map((t) => t.players.map((p) => ({ name: p.name, off: !!p.off }))) : null,
+      offlineSince
+    }),
     render() { lastKey = ""; render(); },
 
     quit() {

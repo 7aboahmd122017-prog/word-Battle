@@ -37,10 +37,12 @@ WB.Local = (() => {
         UI.show("reveal");
         break;
       case "play":
+      case "steal":
         UI.renderPlay({ state: s, word });
-        UI.setSkip(true, !s.skipUsed);
+        UI.setSkip(s.phase === "play", !s.skipUsed);
         UI.show("play");
         UI.Timer.start(s.endsAt, s.timerTotal, onTimeUp);
+        if (s.phase === "steal" && s.timeUp) UI.stealOver();
         break;
       case "result":
         UI.Timer.stop();
@@ -55,13 +57,37 @@ WB.Local = (() => {
     }
   }
 
+  /** خلص وقت الشرح ← يبدأ وقت السرقة. خلص وقت السرقة ← الشارح يحدد */
   function onTimeUp() {
-    if (!s || s.phase !== "play") return;
-    const first = !s.timeUp;
-    s.timeUp = true;
-    UI.$("#timeupMsg").hidden = false;
-    if (first) { Sound.play("timeUp"); Sound.vibrate([220, 90, 220]); }
+    if (!s) return;
+    if (s.phase === "play") {
+      startSteal();
+    } else if (s.phase === "steal" && !s.timeUp) {
+      s.timeUp = true;
+      UI.stealOver();
+      Sound.play("timeUp");
+      Sound.vibrate([220, 90, 220]);
+      save();
+    }
+  }
+
+  function startSteal() {
+    Engine.startSteal(s);
+    Sound.play("timeUp");
+    Sound.vibrate([220, 90, 220]);
     save();
+    render();
+  }
+
+  function finish(to) {
+    UI.Timer.stop();
+    Engine.record(s, to, word);
+    word = null;
+    const got = to !== null;
+    if (s.phase === "win") { Sound.play("win"); Sound.vibrate([100, 60, 100, 60, 300]); }
+    else { Sound.play(got ? "got" : "miss"); Sound.vibrate(got ? 70 : [40, 40, 40]); }
+    save();
+    render();
   }
 
   /* ===== شاشة الإعداد ===== */
@@ -237,15 +263,17 @@ WB.Local = (() => {
       render();
     },
 
+    /** أثناء الشرح: جابوها = نقطة لفريق الشارح. ما جابوها = يبدأ وقت السرقة */
     verdict(got) {
       if (!s || s.phase !== "play") return;
-      UI.Timer.stop();
-      Engine.record(s, got, word);
-      word = null;
-      if (s.phase === "win") { Sound.play("win"); Sound.vibrate([100, 60, 100, 60, 300]); }
-      else { Sound.play(got ? "got" : "miss"); Sound.vibrate(got ? 70 : [40, 40, 40]); }
-      save();
-      render();
+      if (got) finish(s.turnTeam);
+      else startSteal();
+    },
+
+    /** بعد الوقت: الشارح يحدد النقطة لمين ("own" أو "other" أو "none") */
+    award(who) {
+      if (!s || !["play", "steal"].includes(s.phase)) return;
+      finish(who === "own" ? s.turnTeam : who === "other" ? 1 - s.turnTeam : null);
     },
 
     next() {
@@ -284,7 +312,7 @@ WB.Local = (() => {
       const g = loadSession();
       if (!g || !g.s) return false;
       s = g.s; word = g.word;
-      if ((s.phase === "reveal" || s.phase === "play") && !word) s.phase = "turn";
+      if (["reveal", "play", "steal"].includes(s.phase) && !word) s.phase = "turn";
       render();
       return true;
     },
