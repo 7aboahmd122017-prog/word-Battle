@@ -214,6 +214,10 @@ p { margin: 0; }
 .home-tag { color: var(--muted); text-align: center; max-width: 30ch; font-size: 1.02rem; }
 .home-actions { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 10px; }
 
+/* زر تخطي الكلمة */
+.skip-btn { justify-self: center; margin: 4px auto 0; display: flex; }
+.skip-btn:disabled { opacity: 0.5; }
+
 /* توازن الفرق */
 .balance-row { display: grid; justify-items: center; gap: 8px; }
 .balance-hint {

@@ -197,6 +197,34 @@ WB.UI = (() => {
     $("#revealHint").textContent = "اضغط على الكرت عشان تقلبه وتشوف كلمتك.";
   }
 
+  /** زر التخطي: يظهر للشارح بس. available=false يعني استخدم تخطيه في هالدور */
+  function setSkip(visible, available) {
+    $$(".skip-btn").forEach((b) => {
+      b.hidden = !visible;
+      b.disabled = !available;
+      b.querySelector("span").textContent = available ? "صعبة؟ تخطّاها (مرة وحدة)" : "استخدمت التخطي هالدور";
+    });
+  }
+
+  /** تبديل الكلمة بعد التخطي: الكرت ينقلب، يتغير، ويرجع مكشوف للشارح */
+  function swapWord(word, screen) {
+    const isReveal = screen === "reveal";
+    const card = $(isReveal ? "#revealCard" : "#playCard");
+    card.classList.remove("shown", "nudge");
+    setTimeout(() => {
+      fillWord(card, $(isReveal ? "#revealCat" : "#playCat"), $(isReveal ? "#revealWord" : "#playWord"), word, false);
+      requestAnimationFrame(() => card.classList.add("shown"));
+      card.setAttribute("aria-pressed", "true");
+      if (isReveal) {
+        $('[data-action="start-timer"]').disabled = false;
+        $("#revealHint").textContent = "لا تقولها ولا تقول جزء منها. اضغط الكرت إذا تبي تخفيها.";
+      } else {
+        playCard.key = `${playCard.key.split(":").slice(0, 2).join(":")}:${word.id}`;
+        playCard.shown = true;
+      }
+    }, 380);
+  }
+
   // الضغط على الكرت يقلبه (يظهر الكلمة أو يخفيها)
   function toggleFlip(card) {
     if (card.dataset.dragged) { delete card.dataset.dragged; return; }
@@ -400,6 +428,6 @@ WB.UI = (() => {
     show, current: () => current, previous: () => previous,
     updateBar, renderSteppers, renderCategoryChips, syncSettingsScreen,
     renderTurn, renderReveal, renderPlay, renderResult, renderWin, scoreboardHTML,
-    Timer, confirm, toast, sparks
+    Timer, confirm, toast, sparks, setSkip, swapWord
   };
 })();

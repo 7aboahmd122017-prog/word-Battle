@@ -56,6 +56,7 @@ WB.Engine = (() => {
     s.phase = "turn";
     s.endsAt = null;
     s.timeUp = false;
+    s.skipUsed = false; // كل شارح معه تخطي واحد في دوره
   }
 
   function startTimer(s, now = Date.now()) {

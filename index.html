@@ -108,7 +108,7 @@
           </li>
           <li>
             <b>٤</b>
-            <div><h3>ابدأ الوقت واشرح</h3><p>أول ما يبدأ الوقت يتخبى الكرت عن الحاضرين. إذا نسيت الكلمة اضغط الكرت تشوفها.</p></div>
+            <div><h3>ابدأ الوقت واشرح</h3><p>أول ما يبدأ الوقت يتخبى الكرت عن الحاضرين. إذا نسيت الكلمة اضغط الكرت تشوفها. وإذا طلعت لك كلمة صعبة، معك <b>تخطي واحد</b> في كل دور تبدّلها فيه، والوقت يكمل.</p></div>
           </li>
           <li>
             <b>٥</b>
@@ -302,6 +302,7 @@
             </div>
           </div>
           <p class="muted center" id="revealHint">اضغط على الكرت عشان تقلبه وتشوف كلمتك.</p>
+          <button type="button" class="btn btn-ghost btn-sm skip-btn" data-action="skip-word" hidden><svg><use href="#i-shuffle"/></svg><span>صعبة؟ تخطّاها</span></button>
           <button class="btn btn-primary btn-xl" data-action="start-timer" disabled><svg><use href="#i-play"/></svg>ابدأ الوقت</button>
         </div>
       </section>
@@ -327,6 +328,7 @@
               </div>
             </div>
             <p class="swipe-hint">الكرت مخفي عن الحاضرين. اضغطه إذا تبي تشوف كلمتك.<br />اسحبه لفوق إذا جابوها، ولتحت إذا ما جابوها.</p>
+            <button type="button" class="btn btn-ghost btn-sm skip-btn" data-action="skip-word" hidden><svg><use href="#i-shuffle"/></svg><span>صعبة؟ تخطّاها</span></button>
             <p class="timeup-msg" id="timeupMsg" hidden>خلص الوقت! جابوها ولا لا؟</p>
             <div class="verdict">
               <button class="btn btn-got" data-action="got"><svg><use href="#i-check"/></svg>جابوها</button>

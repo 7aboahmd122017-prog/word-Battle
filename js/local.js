@@ -33,10 +33,12 @@ WB.Local = (() => {
         break;
       case "reveal":
         UI.renderReveal(word);
+        UI.setSkip(true, !s.skipUsed);
         UI.show("reveal");
         break;
       case "play":
         UI.renderPlay({ state: s, word });
+        UI.setSkip(true, !s.skipUsed);
         UI.show("play");
         UI.Timer.start(s.endsAt, s.timerTotal, onTimeUp);
         break;
@@ -199,6 +201,20 @@ WB.Local = (() => {
       Sound.play("start");
       save();
       render();
+    },
+
+    /** تخطي واحد للشارح في دوره: كلمة جديدة والوقت يكمل */
+    skipWord() {
+      if (!s || !word || s.skipUsed || !["reveal", "play"].includes(s.phase)) return;
+      const next = Words.pick(s.settings.categories, [...s.usedWords, word.id]);
+      Words.markUsed(next.id);
+      word = next;
+      s.skipUsed = true;
+      Sound.play("reveal");
+      Sound.vibrate(30);
+      save();
+      UI.setSkip(true, false);
+      UI.swapWord(word, s.phase);
     },
 
     ready() {

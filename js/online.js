@@ -187,8 +187,14 @@ WB.Online = (() => {
     if (saved && saved.key === key) return saved.word;
     const w = Words.pick(st.settings.categories, st.usedWords || []);
     Words.markUsed(w.id);
-    sSet(WORD_KEY, { key, word: w });
+    sSet(WORD_KEY, { key, word: w, skipped: false });
     return w;
+  }
+
+  /** هل استخدم الشارح تخطيه في هالدور؟ (محفوظ على جهازه بس) */
+  function skipUsed() {
+    const saved = sGet(WORD_KEY);
+    return !!(saved && saved.key === `${code}:${st.gameId}:${st.round}` && saved.skipped);
   }
 
   /* ================= العرض ================= */
@@ -240,6 +246,7 @@ WB.Online = (() => {
         timeUpShown = false;
         if (amEx && st.phase === "reveal") {
           UI.renderReveal(myWord());
+          UI.setSkip(true, !skipUsed());
           UI.show("reveal");
         } else if (amEx) {
           UI.renderTurn({ state: st, role: "me" });
@@ -255,6 +262,7 @@ WB.Online = (() => {
       case "play":
         UI.renderPlay({ state: { ...st, timeUp: timeUpShown && amEx }, word: amEx ? myWord() : null, myTeam: me.team });
         UI.$("#hostSkip").hidden = !(isHost() && !amEx);
+        UI.setSkip(amEx, amEx && !skipUsed());
         UI.show("play");
         UI.Timer.start(localEndsAt || Date.now(), st.timerTotal || st.settings.roundTime * 1000, onTimeUp);
         break;
@@ -508,6 +516,19 @@ WB.Online = (() => {
     },
 
     ready() { if (st && st.phase === "turn" && st.explainerId === me.id) { myWord(); act({ act: "ready" }); } },
+
+    /** تخطي الكلمة على جهاز الشارح بس: الكلمة الجديدة ما تنرسل لأحد */
+    skipWord() {
+      if (!st || st.explainerId !== me.id || !["reveal", "play"].includes(st.phase) || skipUsed()) return;
+      const current = myWord();
+      const next = Words.pick(st.settings.categories, [...(st.usedWords || []), current.id]);
+      Words.markUsed(next.id);
+      sSet(WORD_KEY, { key: `${code}:${st.gameId}:${st.round}`, word: next, skipped: true });
+      Sound.play("reveal");
+      Sound.vibrate(30);
+      UI.setSkip(true, false);
+      UI.swapWord(next, st.phase);
+    },
     startTimer() { if (st && st.phase === "reveal") act({ act: "start" }); },
     verdict(got) {
       if (!st || st.phase !== "play" || st.explainerId !== me.id) return;
