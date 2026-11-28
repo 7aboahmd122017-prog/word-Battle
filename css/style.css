@@ -278,12 +278,14 @@ p { margin: 0; }
 .rules-steps li:nth-child(3) { animation-delay: 0.1s; }
 .rules-steps li:nth-child(4) { animation-delay: 0.15s; }
 .rules-steps li:nth-child(5) { animation-delay: 0.2s; }
-.rules-steps b {
+/* رقم الخطوة بس (الابن المباشر لـ li)، مو أي كلمة عريضة داخل النص */
+.rules-steps > li > b {
   width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 10px;
   background: var(--violet); color: #0d0a24; font-family: var(--font-art); font-weight: 400; font-size: 1.1rem;
   position: relative; z-index: 1;
 }
-.rules-steps li:nth-child(even) b { background: var(--mint); color: #04231a; }
+.rules-steps > li:nth-child(even) > b { background: var(--mint); color: #04231a; }
+.rules-steps p b { color: var(--text); font-weight: 600; }
 .rules-steps h3 { font-size: 1rem; margin-bottom: 2px; }
 .rules-steps p, .rules-box p { color: var(--muted); font-size: 0.93rem; line-height: 1.7; }
 .rules-split { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
