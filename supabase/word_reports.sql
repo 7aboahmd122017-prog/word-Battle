@@ -1,7 +1,7 @@
 -- =========================================================
 -- جدول بلاغات الكلمات — «وِش الكلمة؟»
 -- الصقه في Supabase ← SQL Editor ← Run (مرة وحدة بس)
--- قبل التشغيل: غيّر ADMIN_EMAIL_HERE لإيميلك (في ٣ أماكن تحت)
+-- قبل التشغيل: غيّر ADMIN_EMAIL_HERE لإيميلك (مكان واحد، في الخطوة ٥ تحت)
 -- =========================================================
 
 -- ١) الجدول: كل بلاغ سطر
@@ -46,19 +46,28 @@ create policy reports_insert_public on public.word_reports
     and (level     is null or char_length(level)     <= 20)
   );
 
--- ٥) القراءة والتعديل والحذف: إيميل الأدمن بس
+-- ٥) مين الأدمن؟ ← غيّر الإيميل هنا بس (مكان واحد)
+create or replace function public.is_reports_admin()
+returns boolean
+language sql stable
+set search_path = ''
+as $$
+  select coalesce(auth.jwt() ->> 'email', '') = 'ADMIN_EMAIL_HERE'
+$$;
+
+-- ٦) القراءة والتعديل والحذف: الأدمن بس
 drop policy if exists reports_admin_select on public.word_reports;
 create policy reports_admin_select on public.word_reports
   for select to authenticated
-  using ((auth.jwt() ->> 'email') = 'ADMIN_EMAIL_HERE');
+  using (public.is_reports_admin());
 
 drop policy if exists reports_admin_update on public.word_reports;
 create policy reports_admin_update on public.word_reports
   for update to authenticated
-  using ((auth.jwt() ->> 'email') = 'ADMIN_EMAIL_HERE')
-  with check ((auth.jwt() ->> 'email') = 'ADMIN_EMAIL_HERE');
+  using (public.is_reports_admin())
+  with check (public.is_reports_admin());
 
 drop policy if exists reports_admin_delete on public.word_reports;
 create policy reports_admin_delete on public.word_reports
   for delete to authenticated
-  using ((auth.jwt() ->> 'email') = 'ADMIN_EMAIL_HERE');
+  using (public.is_reports_admin());
